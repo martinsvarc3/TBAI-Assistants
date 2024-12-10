@@ -17,6 +17,41 @@ declare global {
   }
 }
 
+function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error('🔴 Caught error:', error);
+      setHasError(true);
+      setErrorMessage(error.message);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Something went wrong</h2>
+          <p className="text-gray-600 mb-4">{errorMessage}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 const [activePanel, setActivePanel] = useState<Record<string, 'description' | 'scores'>>(() => {
   return characters.reduce((acc, character) => ({
     ...acc,
