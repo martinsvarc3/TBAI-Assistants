@@ -5,6 +5,18 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react'
 
+declare global {
+  interface Window {
+    $memberstackDom: {
+      getCurrentMember: () => Promise<{
+        data: {
+          id: string;
+        } | null;
+      }>;
+    };
+  }
+}
+
 const scrollbarStyles = `
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -47,6 +59,7 @@ interface Character {
 const [memberId, setMemberId] = useState<string | null>(null);
 
 useEffect(() => {
+  // Check if we're in the browser
   if (typeof window === 'undefined') return;
 
   console.log('Initializing Memberstack...');
@@ -54,10 +67,10 @@ useEffect(() => {
 
   if (memberstack) {
     console.log('Memberstack found, getting current member...');
-    memberstack.getCurrentMember().then(({ data: member }) => {
-      if (member) {
-        console.log('Member found:', member.id);
-        setMemberId(member.id);
+    memberstack.getCurrentMember().then(({ data }) => {
+      if (data) {
+        console.log('Member found:', data.id);
+        setMemberId(data.id);
       } else {
         console.log('No member found');
       }
