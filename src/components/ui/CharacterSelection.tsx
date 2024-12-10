@@ -296,7 +296,20 @@ export default function CharacterSelection() {
         window.location.href = fullUrl;
     }
 };
+const [activePanel, setActivePanel] = useState<Record<string, 'description' | 'scores'>>(() => {
+  // Initialize with description panel for all characters
+  return characters.reduce((acc, character) => ({
+    ...acc,
+    [character.name]: 'description'
+  }), {});
+});
 
+const togglePanel = (characterName: string) => {
+  setActivePanel(prev => ({
+    ...prev,
+    [characterName]: prev[characterName] === 'description' ? 'scores' : 'description'
+  }));
+};
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
