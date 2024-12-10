@@ -47,19 +47,21 @@ interface Character {
 const [memberId, setMemberId] = useState<string | null>(null);
 
 useEffect(() => {
+  if (typeof window === 'undefined') return;
+
   console.log('Initializing Memberstack...');
-  const memberstack = (window as any).$memberstackDom;
+  const memberstack = window.$memberstackDom;
 
   if (memberstack) {
     console.log('Memberstack found, getting current member...');
-    memberstack.getCurrentMember().then(({ data: member }: any) => {
+    memberstack.getCurrentMember().then(({ data: member }) => {
       if (member) {
         console.log('Member found:', member.id);
         setMemberId(member.id);
       } else {
         console.log('No member found');
       }
-    }).catch((error: any) => {
+    }).catch((error) => {
       console.error('Memberstack error:', error);
     });
   } else {
@@ -265,58 +267,7 @@ export default function CharacterSelection() {
     David: 'description',
     Linda: 'description'
   });
-
-  const [memberId, setMemberId] = useState<string | null>(null);
-
-  useEffect(() => {
-    console.log('Initializing Memberstack...');
-    const memberstack = (window as any).$memberstackDom;
-
-    if (memberstack) {
-      console.log('Memberstack found, getting current member...');
-      memberstack.getCurrentMember().then(({ data: member }: any) => {
-        if (member) {
-          console.log('Member found:', member.id);
-          setMemberId(member.id);
-        } else {
-          console.log('No member found');
-        }
-      }).catch((error: any) => {
-        console.error('Memberstack error:', error);
-      });
-    } else {
-      console.error('Memberstack not found');
-    }
-  }, []);
-
-  const handleStart = async (character: Character) => {
-    console.log('Start button clicked for:', character.name);
-
-    if (!memberId) {
-      console.error('No member ID found');
-      return;
-    }
-
-    console.log('Member ID:', memberId);
-
-    const apiUrls: Record<string, string> = {
-      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
-      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
-      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
-    };
-
-    const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
-    if (!apiUrl) {
-      console.error('No API URL found for character:', character.name);
-      return;
-    }
-
-    const fullUrl = `${apiUrl}?member_ID=${memberId}`;
-    console.log('Navigating to:', fullUrl);
-
-    window.location.href = fullUrl;
-  };
-
+  
   const togglePanel = (name: string) => {
     setActivePanel(prev => ({
       ...prev,
