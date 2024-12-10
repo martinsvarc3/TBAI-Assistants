@@ -253,16 +253,12 @@ export default function CharacterSelection() {
     Linda: 'description'
   });
 
-  // Add memberId state here
   const [memberId, setMemberId] = useState<string | null>(null);
 
-  // Add useEffect here
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     console.log('Initializing Memberstack...');
     const memberstack = window.$memberstackDom;
-
     if (memberstack) {
       console.log('Memberstack found, getting current member...');
       memberstack.getCurrentMember().then(({ data }) => {
@@ -280,7 +276,6 @@ export default function CharacterSelection() {
     }
   }, []);
 
-  // Add handleStart here
   const handleStart = async (character: Character) => {
     console.log('Start button clicked for:', character.name);
 
