@@ -17,6 +17,20 @@ declare global {
   }
 }
 
+const [activePanel, setActivePanel] = useState<Record<string, 'description' | 'scores'>>(() => {
+  return characters.reduce((acc, character) => ({
+    ...acc,
+    [character.name]: 'description'
+  }), {});
+});
+
+const togglePanel = (characterName: string) => {
+  setActivePanel(prev => ({
+    ...prev,
+    [characterName]: prev[characterName] === 'description' ? 'scores' : 'description'
+  }));
+};
+
 const ALLOWED_DOMAINS = [
   'webflow.io',
   'webflow.com',
@@ -232,63 +246,65 @@ export default function CharacterSelection() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-  let isMounted = true;
+ useEffect(() => {
+  console.log('🔵 Component mounted');
+  
+  if (typeof window === 'undefined') {
+    console.log('❌ Window undefined');
+    return;
+  }
 
   const handleMessage = (event: MessageEvent) => {
+    console.log('📨 Received message:', event.data);
+    
     const isAllowedOrigin = ALLOWED_DOMAINS.some(domain => 
       event.origin.includes(domain)
     );
 
     if (!isAllowedOrigin) {
-      console.warn('⚠️ Received message from unauthorized origin:', event.origin);
+      console.warn('⚠️ Unauthorized origin:', event.origin);
       return;
     }
 
     if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
-      console.log('✅ Received member ID from parent window');
+      console.log('✅ Setting member ID:', event.data.memberId);
       setMemberId(event.data.memberId);
       setIsLoading(false);
     }
   };
 
-  const initializeMemberstack = async () => {
-    try {
-      const isIframe = window.parent !== window;
-
-      if (isIframe) {
-        console.log('🔵 Running in iframe, requesting member ID from parent...');
-        window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
-      } else {
-        console.log('🔵 Running standalone, checking Memberstack directly...');
-        if (window.$memberstackDom) {
-          const { data } = await window.$memberstackDom.getCurrentMember();
-          if (data?.id && isMounted) {
-            setMemberId(data.id);
-            console.log('✅ Member ID found:', data.id);
-          }
-        } else {
-          console.error('❌ Memberstack not initialized');
-          setError('Memberstack initialization failed');
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error initializing:', error);
-      if (isMounted) {
-        setError('Failed to initialize member data');
-      }
-    } finally {
-      if (isMounted) {
-        setIsLoading(false);
-      }
-    }
-  };
-
   window.addEventListener('message', handleMessage);
-  initializeMemberstack();
+  
+  // Request member ID from parent
+  if (window.parent !== window) {
+    console.log('🔵 Requesting member ID from parent');
+    window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
+  } else {
+    console.log('🔵 Checking Memberstack directly');
+    const memberstack = window.$memberstackDom;
+    if (memberstack) {
+      memberstack.getCurrentMember()
+        .then(({ data }) => {
+          if (data?.id) {
+            console.log('✅ Found member ID:', data.id);
+            setMemberId(data.id);
+          } else {
+            console.log('❌ No member data found');
+          }
+        })
+        .catch(error => {
+          console.error('❌ Memberstack error:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      console.error('❌ Memberstack not found');
+      setIsLoading(false);
+    }
+  }
 
   return () => {
-    isMounted = false;
     window.removeEventListener('message', handleMessage);
   };
 }, []);
