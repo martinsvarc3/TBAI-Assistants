@@ -4,7 +4,74 @@ import { useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect } from "react" // update your existing useState import
 
+// Add this right after your character interface and before the characters array
+const [memberId, setMemberId] = useState<string | null>(null);
+
+useEffect(() => {
+  // Get memberstack from window
+  const memberstack = (window as any).$memberstackDom;
+
+  if (memberstack) {
+    memberstack.getCurrentMember().then(({ data: member }: any) => {
+      if (member) {
+        setMemberId(member.id);
+      }
+    }).catch((error: any) => {
+      console.error('Error:', error);
+    });
+  }
+}, []);
+
+const handleStart = async (character: Character) => {
+  if (!memberId) {
+    console.error('No member ID found');
+    return;
+  }
+
+  const apiUrls = {
+    Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+    David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+    Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+  };
+
+  const apiUrl = apiUrls[character.name];
+  if (!apiUrl) return;
+
+  try {
+    const response = await fetch(`${apiUrl}?member_ID=${memberId}`);
+    if (response.ok) {
+      // After successful API call, create and append iframe
+      const dashboardContainer = document.querySelector('.dashboard-wrapper');
+      if (dashboardContainer) {
+        // Clear existing content
+        dashboardContainer.innerHTML = '';
+        
+        // Create new iframe
+        const dashboardFrame = document.createElement('iframe');
+        dashboardFrame.src = `${apiUrl}?member_ID=${memberId}`;
+        dashboardFrame.style.width = '100%';
+        dashboardFrame.style.height = '1000px';
+        dashboardFrame.style.transition = 'height 0.3s ease';
+
+        // Add message event listener for dynamic height
+        window.addEventListener('message', function(e) {
+          if (e.origin === new URL(apiUrl).origin) {
+            if (e.data.type === 'setHeight') {
+              const newHeight = Math.max(e.data.height, 1000);
+              dashboardFrame.style.height = newHeight + 'px';
+            }
+          }
+        });
+
+        dashboardContainer.appendChild(dashboardFrame);
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
 const scrollbarStyles = `
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -255,16 +322,17 @@ export default function CharacterSelection() {
                     {character.difficulty.toUpperCase()}
                   </div>
                 </div>
-                <button
-                  className="w-full py-3 rounded-full text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
-                  style={{
-                    backgroundColor: "#5f0bb9",
-                    boxShadow: "0 4px 14px 0 rgba(95, 11, 185, 0.39)"
-                  }}
-                  disabled={character.locked}
-                >
-                  START
-                </button>
+<button
+  className="w-full py-3 rounded-full text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
+  style={{
+    backgroundColor: "#5f0bb9",
+    boxShadow: "0 4px 14px 0 rgba(95, 11, 185, 0.39)"
+  }}
+  disabled={character.locked}
+  onClick={() => handleStart(character)}
+>
+  START
+</button>
               </div>
               <div className="relative w-full mb-6 flex-grow">
                 <button 
