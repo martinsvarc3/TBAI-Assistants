@@ -56,34 +56,6 @@ interface Character {
     overallEffectiveness: number
   }
 }
-const [memberId, setMemberId] = useState<string | null>(null);
-
-useEffect(() => {
-  // Check if we're in the browser
-  if (typeof window === 'undefined') return;
-
-  console.log('Initializing Memberstack...');
-  const memberstack = window.$memberstackDom;
-
-  if (memberstack) {
-    console.log('Memberstack found, getting current member...');
-    memberstack.getCurrentMember().then(({ data }) => {
-      if (data) {
-        console.log('Member found:', data.id);
-        setMemberId(data.id);
-      } else {
-        console.log('No member found');
-      }
-    }).catch((error) => {
-      console.error('Memberstack error:', error);
-    });
-  } else {
-    console.error('Memberstack not found');
-  }
-}, []);
-
-const handleStart = async (character: Character) => {
-  console.log('Start button clicked for:', character.name);
 
   if (!memberId) {
     console.error('No member ID found');
@@ -280,7 +252,63 @@ export default function CharacterSelection() {
     David: 'description',
     Linda: 'description'
   });
-  
+
+  // Add memberId state here
+  const [memberId, setMemberId] = useState<string | null>(null);
+
+  // Add useEffect here
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    console.log('Initializing Memberstack...');
+    const memberstack = window.$memberstackDom;
+
+    if (memberstack) {
+      console.log('Memberstack found, getting current member...');
+      memberstack.getCurrentMember().then(({ data }) => {
+        if (data) {
+          console.log('Member found:', data.id);
+          setMemberId(data.id);
+        } else {
+          console.log('No member found');
+        }
+      }).catch((error) => {
+        console.error('Memberstack error:', error);
+      });
+    } else {
+      console.error('Memberstack not found');
+    }
+  }, []);
+
+  // Add handleStart here
+  const handleStart = async (character: Character) => {
+    console.log('Start button clicked for:', character.name);
+
+    if (!memberId) {
+      console.error('No member ID found');
+      return;
+    }
+
+    console.log('Member ID:', memberId);
+
+    const apiUrls: Record<string, string> = {
+      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+    };
+
+    const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
+    if (!apiUrl) {
+      console.error('No API URL found for character:', character.name);
+      return;
+    }
+
+    const fullUrl = `${apiUrl}?member_ID=${memberId}`;
+    console.log('Navigating to:', fullUrl);
+
+    window.location.href = fullUrl;
+  };
+
   const togglePanel = (name: string) => {
     setActivePanel(prev => ({
       ...prev,
