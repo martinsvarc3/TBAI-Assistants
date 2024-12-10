@@ -258,76 +258,63 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
   )
 }
 
+
 export default function CharacterSelection() {
   const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
     Megan: 'description',
     David: 'description',
     Linda: 'description'
   });
+
   const [memberId, setMemberId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get memberstack from window
+    console.log('Initializing Memberstack...');
     const memberstack = (window as any).$memberstackDom;
 
     if (memberstack) {
+      console.log('Memberstack found, getting current member...');
       memberstack.getCurrentMember().then(({ data: member }: any) => {
         if (member) {
+          console.log('Member found:', member.id);
           setMemberId(member.id);
+        } else {
+          console.log('No member found');
         }
       }).catch((error: any) => {
-        console.error('Error:', error);
+        console.error('Memberstack error:', error);
       });
+    } else {
+      console.error('Memberstack not found');
     }
   }, []);
 
   const handleStart = async (character: Character) => {
-  if (!memberId) {
-    console.error('No member ID found');
-    return;
-  }
+    console.log('Start button clicked for:', character.name);
 
-  const apiUrls: Record<string, string> = {
-    Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
-    David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
-    Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
-  };
-
-  const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
-  if (!apiUrl) return;
-
-    try {
-      const response = await fetch(`${apiUrl}?member_ID=${memberId}`);
-      if (response.ok) {
-        // After successful API call, create and append iframe
-        const dashboardContainer = document.querySelector('.dashboard-wrapper');
-        if (dashboardContainer) {
-          // Clear existing content
-          dashboardContainer.innerHTML = '';
-          
-          // Create new iframe
-          const dashboardFrame = document.createElement('iframe');
-          dashboardFrame.src = `${apiUrl}?member_ID=${memberId}`;
-          dashboardFrame.style.width = '100%';
-          dashboardFrame.style.height = '1000px';
-          dashboardFrame.style.transition = 'height 0.3s ease';
-
-          // Add message event listener for dynamic height
-          window.addEventListener('message', function(e) {
-            if (e.origin === new URL(apiUrl).origin) {
-              if (e.data.type === 'setHeight') {
-                const newHeight = Math.max(e.data.height, 1000);
-                dashboardFrame.style.height = newHeight + 'px';
-              }
-            }
-          });
-
-          dashboardContainer.appendChild(dashboardFrame);
-        }
-      }
-    } catch (error) {
-      console.error('Error:', error);
+    if (!memberId) {
+      console.error('No member ID found');
+      return;
     }
+
+    console.log('Member ID:', memberId);
+
+    const apiUrls: Record<string, string> = {
+      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+    };
+
+    const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
+    if (!apiUrl) {
+      console.error('No API URL found for character:', character.name);
+      return;
+    }
+
+    const fullUrl = `${apiUrl}?member_ID=${memberId}`;
+    console.log('Navigating to:', fullUrl);
+
+    window.location.href = fullUrl;
   };
 
   const togglePanel = (name: string) => {
