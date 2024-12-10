@@ -231,24 +231,19 @@ export default function CharacterSelection() {
   const [memberId, setMemberId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    console.log('Initializing Memberstack...');
-    const memberstack = window.$memberstackDom;
-    if (memberstack) {
-      console.log('Memberstack found, getting current member...');
-      memberstack.getCurrentMember().then(({ data }) => {
-        if (data) {
-          console.log('Member found:', data.id);
-          setMemberId(data.id);
-        } else {
-          console.log('No member found');
-        }
-      }).catch((error) => {
-        console.error('Memberstack error:', error);
-      });
-    } else {
-      console.error('Memberstack not found');
-    }
+    // Request member ID from parent window
+    window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
+
+    // Listen for member ID from parent
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
+        console.log('Received member ID:', event.data.memberId);
+        setMemberId(event.data.memberId);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   const handleStart = async (character: Character) => {
@@ -259,24 +254,25 @@ export default function CharacterSelection() {
       return;
     }
 
-    console.log('Member ID:', memberId);
-
     const apiUrls: Record<string, string> = {
       Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
       David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
       Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
     };
 
-    const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
+    const apiUrl = apiUrls[character.name];
     if (!apiUrl) {
       console.error('No API URL found for character:', character.name);
       return;
     }
 
     const fullUrl = `${apiUrl}?member_ID=${memberId}`;
-    console.log('Navigating to:', fullUrl);
-
-    window.location.href = fullUrl;
+    
+    // Instead of direct navigation, send message to parent
+    window.parent.postMessage({
+      type: 'REDIRECT',
+      url: fullUrl
+    }, '*');
   };
 
   const togglePanel = (name: string) => {
