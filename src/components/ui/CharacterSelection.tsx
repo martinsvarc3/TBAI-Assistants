@@ -44,7 +44,57 @@ interface Character {
     overallEffectiveness: number
   }
 }
+const [memberId, setMemberId] = useState<string | null>(null);
 
+useEffect(() => {
+  console.log('Initializing Memberstack...');
+  const memberstack = (window as any).$memberstackDom;
+
+  if (memberstack) {
+    console.log('Memberstack found, getting current member...');
+    memberstack.getCurrentMember().then(({ data: member }: any) => {
+      if (member) {
+        console.log('Member found:', member.id);
+        setMemberId(member.id);
+      } else {
+        console.log('No member found');
+      }
+    }).catch((error: any) => {
+      console.error('Memberstack error:', error);
+    });
+  } else {
+    console.error('Memberstack not found');
+  }
+}, []);
+
+const handleStart = async (character: Character) => {
+  console.log('Start button clicked for:', character.name);
+
+  if (!memberId) {
+    console.error('No member ID found');
+    return;
+  }
+
+  console.log('Member ID:', memberId);
+
+  const apiUrls: Record<string, string> = {
+    Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+    David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+    Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+  };
+
+  const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
+  if (!apiUrl) {
+    console.error('No API URL found for character:', character.name);
+    return;
+  }
+
+  const fullUrl = `${apiUrl}?member_ID=${memberId}`;
+  console.log('Navigating to:', fullUrl);
+
+  // Instead of fetch, directly navigate to the URL
+  window.location.href = fullUrl;
+};
 const characters: Character[] = [
   {
     name: "Megan",
@@ -53,6 +103,7 @@ const characters: Character[] = [
     description: "I'm Megan, 25, fresh out of college with my marketing degree and diving headfirst into real estate. Everything's new territory for me right now, especially wholesaling - it's like learning a whole new language! I'm super eager to learn though, and I've got plenty of questions. Hope you don't mind walking me through the basics.",
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/672e571489c14976033b13e0_Obr%C3%A1zek%20WhatsApp%2C%202024-11-08%20v%2019.21.46_99e4962c-p-500.jpg",
     color: "#48C7AE",
+    locked: false, // Add this line
     scores: {
       overallPerformance: 83,
       engagement: 80,
