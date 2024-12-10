@@ -231,19 +231,19 @@ export default function CharacterSelection() {
   }, []);
 
   const handleStart = async (character: Character) => {
-    if (!memberId) {
-      console.error('No member ID found');
-      return;
-    }
+  if (!memberId) {
+    console.error('No member ID found');
+    return;
+  }
 
-    const apiUrls = {
-      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
-      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
-      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
-    };
+  const apiUrls: Record<string, string> = {
+    Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+    David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+    Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+  };
 
-    const apiUrl = apiUrls[character.name];
-    if (!apiUrl) return;
+  const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
+  if (!apiUrl) return;
 
     try {
       const response = await fetch(`${apiUrl}?member_ID=${memberId}`);
