@@ -17,6 +17,13 @@ declare global {
   }
 }
 
+const ALLOWED_DOMAINS = [
+  'webflow.io',
+  'webflow.com',
+  'app.trainedbyai.com',
+  'trainedbyai.com'
+];
+
 const scrollbarStyles = `
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -222,45 +229,79 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
 
 export default function CharacterSelection() {
   const [memberId, setMemberId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+  let isMounted = true;
 
-    console.log('Starting Memberstack initialization...');
-    const memberstack = window.$memberstackDom;
+  const handleMessage = (event: MessageEvent) => {
+    const isAllowedOrigin = ALLOWED_DOMAINS.some(domain => 
+      event.origin.includes(domain)
+    );
 
-    if (!memberstack) {
-      console.error('❌ Memberstack not found! Check if Memberstack script is loaded');
+    if (!isAllowedOrigin) {
+      console.warn('⚠️ Received message from unauthorized origin:', event.origin);
       return;
     }
 
-    memberstack.getCurrentMember()
-      .then(({ data }) => {
-        if (data) {
-          console.log('✅ Member found:', data.id);
-          setMemberId(data.id);
+    if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
+      console.log('✅ Received member ID from parent window');
+      setMemberId(event.data.memberId);
+      setIsLoading(false);
+    }
+  };
+
+  const initializeMemberstack = async () => {
+    try {
+      const isIframe = window.parent !== window;
+
+      if (isIframe) {
+        console.log('🔵 Running in iframe, requesting member ID from parent...');
+        window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
+      } else {
+        console.log('🔵 Running standalone, checking Memberstack directly...');
+        if (window.$memberstackDom) {
+          const { data } = await window.$memberstackDom.getCurrentMember();
+          if (data?.id && isMounted) {
+            setMemberId(data.id);
+            console.log('✅ Member ID found:', data.id);
+          }
         } else {
-          console.error('❌ No member data found');
+          console.error('❌ Memberstack not initialized');
+          setError('Memberstack initialization failed');
         }
-      })
-      .catch((error) => {
-        console.error('❌ Memberstack error:', error);
-      });
-  }, []);
+      }
+    } catch (error) {
+      console.error('❌ Error initializing:', error);
+      if (isMounted) {
+        setError('Failed to initialize member data');
+      }
+    } finally {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  window.addEventListener('message', handleMessage);
+  initializeMemberstack();
+
+  return () => {
+    isMounted = false;
+    window.removeEventListener('message', handleMessage);
+  };
+}, []);
 
   const handleStart = async (character: Character) => {
-    console.log('🔵 Start clicked for:', character.name);
-    console.log('🔵 Current memberId:', memberId);
-
-    // If we don't have a memberId, try to get it from the parent window
-    if (!memberId && window.parent !== window) {
-        window.parent.postMessage({
-            type: 'GET_MEMBER_ID',
-            character: character.name
-        }, '*');
+    if (!memberId) {
+        console.error('❌ No member ID available');
+        setError('Member ID not available. Please try logging in again.');
         return;
-    } else if (!memberId) {
-        console.error('❌ No member ID found - user might not be logged in');
+    }
+
+    if (character.locked) {
+        console.log('⚠️ Character is locked:', character.name);
         return;
     }
 
@@ -272,30 +313,33 @@ export default function CharacterSelection() {
 
     const apiUrl = apiUrls[character.name];
     if (!apiUrl) {
-        console.error('❌ No API URL found for character:', character.name);
+        console.error('❌ Invalid character name:', character.name);
+        setError('Invalid character selection');
         return;
     }
 
     const fullUrl = `${apiUrl}?member_ID=${memberId}`;
-    console.log('✅ Navigating to:', fullUrl);
-    
+    console.log('✅ Navigation URL:', fullUrl);
+
     try {
-        // First try to communicate with parent window
         if (window.parent !== window) {
+            console.log('🔵 Sending redirect message to parent');
             window.parent.postMessage({
-                type: 'START_CLICK',
+                type: 'REDIRECT',
                 url: fullUrl
             }, '*');
         } else {
-            // If no parent window, navigate directly
+            console.log('🔵 Performing direct navigation');
             window.location.href = fullUrl;
         }
     } catch (error) {
         console.error('❌ Navigation error:', error);
+        setError('Failed to navigate. Please try again.');
         // Fallback to direct navigation if postMessage fails
         window.location.href = fullUrl;
     }
-};
+  };
+  
 const [activePanel, setActivePanel] = useState<Record<string, 'description' | 'scores'>>(() => {
   // Initialize with description panel for all characters
   return characters.reduce((acc, character) => ({
@@ -310,6 +354,34 @@ const togglePanel = (characterName: string) => {
     [characterName]: prev[characterName] === 'description' ? 'scores' : 'description'
   }));
 };
+
+  if (isLoading) {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+if (error) {
+  
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center text-red-600">
+        <p>{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+}
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
