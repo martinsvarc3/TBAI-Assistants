@@ -1,77 +1,10 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react'
-import { useState, useEffect } from "react" // update your existing useState import
 
-// Add this right after your character interface and before the characters array
-const [memberId, setMemberId] = useState<string | null>(null);
-
-useEffect(() => {
-  // Get memberstack from window
-  const memberstack = (window as any).$memberstackDom;
-
-  if (memberstack) {
-    memberstack.getCurrentMember().then(({ data: member }: any) => {
-      if (member) {
-        setMemberId(member.id);
-      }
-    }).catch((error: any) => {
-      console.error('Error:', error);
-    });
-  }
-}, []);
-
-const handleStart = async (character: Character) => {
-  if (!memberId) {
-    console.error('No member ID found');
-    return;
-  }
-
-  const apiUrls = {
-    Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
-    David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
-    Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
-  };
-
-  const apiUrl = apiUrls[character.name];
-  if (!apiUrl) return;
-
-  try {
-    const response = await fetch(`${apiUrl}?member_ID=${memberId}`);
-    if (response.ok) {
-      // After successful API call, create and append iframe
-      const dashboardContainer = document.querySelector('.dashboard-wrapper');
-      if (dashboardContainer) {
-        // Clear existing content
-        dashboardContainer.innerHTML = '';
-        
-        // Create new iframe
-        const dashboardFrame = document.createElement('iframe');
-        dashboardFrame.src = `${apiUrl}?member_ID=${memberId}`;
-        dashboardFrame.style.width = '100%';
-        dashboardFrame.style.height = '1000px';
-        dashboardFrame.style.transition = 'height 0.3s ease';
-
-        // Add message event listener for dynamic height
-        window.addEventListener('message', function(e) {
-          if (e.origin === new URL(apiUrl).origin) {
-            if (e.data.type === 'setHeight') {
-              const newHeight = Math.max(e.data.height, 1000);
-              dashboardFrame.style.height = newHeight + 'px';
-            }
-          }
-        });
-
-        dashboardContainer.appendChild(dashboardFrame);
-      }
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
 const scrollbarStyles = `
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -119,7 +52,7 @@ const characters: Character[] = [
     age: 25,
     description: "I'm Megan, 25, fresh out of college with my marketing degree and diving headfirst into real estate. Everything's new territory for me right now, especially wholesaling - it's like learning a whole new language! I'm super eager to learn though, and I've got plenty of questions. Hope you don't mind walking me through the basics.",
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/672e571489c14976033b13e0_Obr%C3%A1zek%20WhatsApp%2C%202024-11-08%20v%2019.21.46_99e4962c-p-500.jpg",
-    color: "#48C7AE", // Green
+    color: "#48C7AE",
     scores: {
       overallPerformance: 83,
       engagement: 80,
@@ -136,7 +69,7 @@ const characters: Character[] = [
     age: 40,
     description: "I'm David, 40, and I approach real estate decisions with the same analytical mindset I've developed over years in finance. Currently evaluating multiple offers for my property from wholesalers, and I need to make sure I'm not leaving money on the table. I dig into the details and expect clear, data-backed answers. Let's break down these options systematically.",
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/6729085f757129974706314d_image%20(6)-p-500.png",
-    color: "#FCA147", // Orange
+    color: "#FCA147",
     locked: true,
     scores: {
       overallPerformance: 88,
@@ -154,7 +87,7 @@ const characters: Character[] = [
     age: 55,
     description: "I'm Linda, 55, with decades in real estate investing and a legal background that makes me question everything twice. I've seen too many deals go south to take anything at face value. While wholesaling might be legal, I have serious concerns about how it's used with distressed properties. Let's talk ethics and compliance.",
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/6729085f8a8dc1e8f78eae9b_image%20(7)-p-500.png",
-    color: "#DC2626", // Red
+    color: "#DC2626",
     locked: true,
     scores: {
       overallPerformance: 93,
@@ -280,6 +213,71 @@ export default function CharacterSelection() {
     David: 'description',
     Linda: 'description'
   });
+  const [memberId, setMemberId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get memberstack from window
+    const memberstack = (window as any).$memberstackDom;
+
+    if (memberstack) {
+      memberstack.getCurrentMember().then(({ data: member }: any) => {
+        if (member) {
+          setMemberId(member.id);
+        }
+      }).catch((error: any) => {
+        console.error('Error:', error);
+      });
+    }
+  }, []);
+
+  const handleStart = async (character: Character) => {
+    if (!memberId) {
+      console.error('No member ID found');
+      return;
+    }
+
+    const apiUrls = {
+      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+    };
+
+    const apiUrl = apiUrls[character.name];
+    if (!apiUrl) return;
+
+    try {
+      const response = await fetch(`${apiUrl}?member_ID=${memberId}`);
+      if (response.ok) {
+        // After successful API call, create and append iframe
+        const dashboardContainer = document.querySelector('.dashboard-wrapper');
+        if (dashboardContainer) {
+          // Clear existing content
+          dashboardContainer.innerHTML = '';
+          
+          // Create new iframe
+          const dashboardFrame = document.createElement('iframe');
+          dashboardFrame.src = `${apiUrl}?member_ID=${memberId}`;
+          dashboardFrame.style.width = '100%';
+          dashboardFrame.style.height = '1000px';
+          dashboardFrame.style.transition = 'height 0.3s ease';
+
+          // Add message event listener for dynamic height
+          window.addEventListener('message', function(e) {
+            if (e.origin === new URL(apiUrl).origin) {
+              if (e.data.type === 'setHeight') {
+                const newHeight = Math.max(e.data.height, 1000);
+                dashboardFrame.style.height = newHeight + 'px';
+              }
+            }
+          });
+
+          dashboardContainer.appendChild(dashboardFrame);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   const togglePanel = (name: string) => {
     setActivePanel(prev => ({
@@ -322,17 +320,17 @@ export default function CharacterSelection() {
                     {character.difficulty.toUpperCase()}
                   </div>
                 </div>
-<button
-  className="w-full py-3 rounded-full text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
-  style={{
-    backgroundColor: "#5f0bb9",
-    boxShadow: "0 4px 14px 0 rgba(95, 11, 185, 0.39)"
-  }}
-  disabled={character.locked}
-  onClick={() => handleStart(character)}
->
-  START
-</button>
+                <button
+                  className="w-full py-3 rounded-full text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
+                  style={{
+                    backgroundColor: "#5f0bb9",
+                    boxShadow: "0 4px 14px 0 rgba(95, 11, 185, 0.39)"
+                  }}
+                  disabled={character.locked}
+                  onClick={() => handleStart(character)}
+                >
+                  START
+                </button>
               </div>
               <div className="relative w-full mb-6 flex-grow">
                 <button 
@@ -392,4 +390,3 @@ export default function CharacterSelection() {
     </div>
   )
 }
-
