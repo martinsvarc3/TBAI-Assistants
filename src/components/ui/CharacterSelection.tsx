@@ -220,71 +220,82 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
   )
 }
 
-
 export default function CharacterSelection() {
-  const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
-    Megan: 'description',
-    David: 'description',
-    Linda: 'description'
-  });
-
   const [memberId, setMemberId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    console.log('Initializing Memberstack...');
+
+    console.log('Starting Memberstack initialization...');
     const memberstack = window.$memberstackDom;
-    if (memberstack) {
-      console.log('Memberstack found, getting current member...');
-      memberstack.getCurrentMember().then(({ data }) => {
+
+    if (!memberstack) {
+      console.error('❌ Memberstack not found! Check if Memberstack script is loaded');
+      return;
+    }
+
+    memberstack.getCurrentMember()
+      .then(({ data }) => {
         if (data) {
-          console.log('Member found:', data.id);
+          console.log('✅ Member found:', data.id);
           setMemberId(data.id);
         } else {
-          console.log('No member found');
+          console.error('❌ No member data found');
         }
-      }).catch((error) => {
-        console.error('Memberstack error:', error);
+      })
+      .catch((error) => {
+        console.error('❌ Memberstack error:', error);
       });
-    } else {
-      console.error('Memberstack not found');
-    }
   }, []);
 
   const handleStart = async (character: Character) => {
-    console.log('Start button clicked for:', character.name);
+    console.log('🔵 Start clicked for:', character.name);
+    console.log('🔵 Current memberId:', memberId);
 
-    if (!memberId) {
-      console.error('No member ID found');
-      return;
+    // If we don't have a memberId, try to get it from the parent window
+    if (!memberId && window.parent !== window) {
+        window.parent.postMessage({
+            type: 'GET_MEMBER_ID',
+            character: character.name
+        }, '*');
+        return;
+    } else if (!memberId) {
+        console.error('❌ No member ID found - user might not be logged in');
+        return;
     }
 
-    console.log('Member ID:', memberId);
-
     const apiUrls: Record<string, string> = {
-      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
-      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
-      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
+        Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+        David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+        Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
     };
 
-    const apiUrl = apiUrls[character.name as keyof typeof apiUrls];
+    const apiUrl = apiUrls[character.name];
     if (!apiUrl) {
-      console.error('No API URL found for character:', character.name);
-      return;
+        console.error('❌ No API URL found for character:', character.name);
+        return;
     }
 
     const fullUrl = `${apiUrl}?member_ID=${memberId}`;
-    console.log('Navigating to:', fullUrl);
-
-    window.location.href = fullUrl;
-  };
-
-  const togglePanel = (name: string) => {
-    setActivePanel(prev => ({
-      ...prev,
-      [name]: prev[name] === 'description' ? 'scores' : 'description'
-    }));
-  };
+    console.log('✅ Navigating to:', fullUrl);
+    
+    try {
+        // First try to communicate with parent window
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: 'START_CLICK',
+                url: fullUrl
+            }, '*');
+        } else {
+            // If no parent window, navigate directly
+            window.location.href = fullUrl;
+        }
+    } catch (error) {
+        console.error('❌ Navigation error:', error);
+        // Fallback to direct navigation if postMessage fails
+        window.location.href = fullUrl;
+    }
+};
 
   return (
     <div className="container mx-auto px-4 py-8">
