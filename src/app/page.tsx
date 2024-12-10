@@ -1,13 +1,13 @@
-'use client'
+import dynamic from 'next/dynamic'
 
-import CharacterSelection from "@/components/ui/CharacterSelection";
+const CharacterSelection = dynamic(() => import('../components/ui/CharacterSelection'), {
+  ssr: false // This is crucial - it disables server-side rendering
+})
 
-export default function Home() {
+export default function Page() {
   return (
-    <main className="min-h-screen bg-gray-100">
-      <div className="dashboard-wrapper" style={{ overflow: 'visible' }}>
-        <CharacterSelection />
-      </div>
+    <main>
+      <CharacterSelection />
     </main>
-  );
+  )
 }
