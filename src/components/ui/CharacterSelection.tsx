@@ -290,26 +290,28 @@ export default function CharacterSelection() {
     }));
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+ return (
+    <div className="w-full bg-white rounded-[20px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
         {characters.map((character, index) => (
           <div 
             key={character.name} 
-            className={`relative rounded-[32px] bg-white overflow-hidden shadow-lg transition-shadow duration-300 hover:shadow-[0_0_20px_${character.color.replace('#', 'rgba(').slice(0, -1)},0.5)]`}
+            className={`relative rounded-[32px] overflow-hidden shadow-lg transition-shadow duration-300 hover:shadow-[0_0_20px_${character.color.replace('#', 'rgba(').slice(0, -1)},0.5)]`}
             style={{ 
               boxShadow: `0 0 15px ${character.color}`
             }}
           >
             <div className="p-4 flex flex-col items-center text-center">
-              <div className="w-32 h-32 mb-2 relative overflow-hidden rounded-[20px] transition-all duration-300 ease-in-out hover:shadow-xl" style={{ perspective: '1000px' }}>
-                <div className="w-full h-full transition-transform duration-300 ease-in-out hover:scale-110 hover:rotate-y-[-5deg] hover:translate-z-[20px]">
-                  <Image
-                    src={character.imageSrc}
-                    alt={character.name}
-                    fill
-                    className="object-cover rounded-[20px]"
-                  />
+              <div className="w-full px-5 mb-2">
+                <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px] transition-all duration-300 ease-in-out hover:shadow-xl" style={{ perspective: '1000px' }}>
+                  <div className="w-full h-full transition-transform duration-300 ease-in-out hover:scale-110 hover:rotate-y-[-5deg] hover:translate-z-[20px]">
+                    <Image
+                      src={character.imageSrc}
+                      alt={character.name}
+                      fill
+                      className="object-cover rounded-[20px]"
+                    />
+                  </div>
                 </div>
               </div>
               <div className="w-full mb-2 flex flex-col items-center">
@@ -338,18 +340,18 @@ export default function CharacterSelection() {
               </div>
               <div className="relative w-full mb-6 flex-grow">
                 <button 
-                    onClick={() => togglePanel(character.name)}
-                    className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
-                  >
-                    <span>
-                      {activePanel[character.name] === 'description' ? 'View Performance' : 'Back to Description'}
-                    </span>
-                    {activePanel[character.name] === 'description' ? (
-                      <ChevronDown size={20} className="inline-block ml-2" />
-                    ) : (
-                      <ChevronUp size={20} className="inline-block ml-2" />
-                    )}
-                  </button>
+                  onClick={() => togglePanel(character.name)}
+                  className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
+                >
+                  <span>
+                    {activePanel[character.name] === 'description' ? 'View Performance' : 'Back to Description'}
+                  </span>
+                  {activePanel[character.name] === 'description' ? (
+                    <ChevronDown size={20} className="inline-block ml-2" />
+                  ) : (
+                    <ChevronUp size={20} className="inline-block ml-2" />
+                  )}
+                </button>
                 <div className="min-h-[300px] overflow-hidden relative">
                   <AnimatePresence initial={false}>
                     {activePanel[character.name] === 'description' ? (
@@ -392,5 +394,4 @@ export default function CharacterSelection() {
         ))}
       </div>
     </div>
-  )
-}
+  );
