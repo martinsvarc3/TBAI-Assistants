@@ -19,29 +19,31 @@ declare global {
 
 const scrollbarStyles = `
   .scrollbar-thin {
+    /* Firefox */
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.6) transparent;
+    scrollbar-color: #f2f3f8 transparent;
   }
   
   .scrollbar-thin::-webkit-scrollbar {
     width: 2px !important;
+    display: block !important;
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent !important;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-button {
-    display: none !important;
+    display: block !important;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.6) !important;
+    background-color: #f2f3f8 !important;
     border-radius: 1px !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.8) !important;
+  .scrollbar-thin::-webkit-scrollbar-button {
+    display: none !important;
   }
 `
 
