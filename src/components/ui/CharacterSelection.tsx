@@ -166,7 +166,7 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
     <>
       <style jsx>{scrollbarStyles}</style>
       <div className="w-full text-sm h-[320px] flex flex-col">
-        <div className="flex-grow overflow-y-auto scrollbar-thin">
+        <div className="flex-grow overflow-y-scroll overflow-x-hidden scrollbar-thin mb-6">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">Score based on past 10 calls</h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
@@ -185,7 +185,7 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
         </div>
         <button 
           onClick={handleRecordsClick}
-          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
+          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md"
         >
           Go to Call Records
         </button>
