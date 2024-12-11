@@ -20,22 +20,26 @@ declare global {
 const scrollbarStyles = `
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+    scrollbar-color: #f2f3f8 transparent;
+    padding-right: 8px; /* Add padding to prevent content overlap with scrollbar */
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 4px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
-    border-radius: 6px;
+    margin-top: 40px; /* Align with Overall Performance start */
+  }
+  .scrollbar-thin::-webkit-scrollbar-button {
+    display: none; /* Remove arrows */
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: 6px;
+    background-color: #f2f3f8;
+    border-radius: 10px;
     transition: background-color 0.2s ease;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: #e1e2e7;
   }
 `
 
