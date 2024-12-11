@@ -143,6 +143,23 @@ const characters: Character[] = [
   },
 ]
 
+function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
+  const handleRecordsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.parent.postMessage({
+      type: 'REDIRECT',
+      url: 'https://app.trainedbyai.com/call-records'
+    }, '*');
+  };
+
+  const categories = [
+    { key: 'overallPerformance', label: 'Overall Performance' },
+    { key: 'engagement', label: 'Engagement' },
+    { key: 'objectionHandling', label: 'Objection Handling' },
+    { key: 'informationGathering', label: 'Information Gathering' },
+    { key: 'programExplanation', label: 'Program Explanation' },
+    { key: 'closingSkills', label: 'Closing Skills' },
+    { key: 'overallEffectiveness', label: 'Overall Effectiveness' },
   ];
 
   return (
