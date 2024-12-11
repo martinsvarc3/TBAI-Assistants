@@ -158,7 +158,7 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
         </div>
         <button
           onClick={handleRecordsClick}
-          className="w-full h-[45px] my-6 rounded-[20px] text-black font-semibold text-lg transition-all hover:opacity-90 border-2 border-[#f2f3f8] flex items-center justify-center"
+          className="w-full h-[70px] my-6 rounded-[20px] text-black font-semibold text-lg transition-all hover:opacity-90 border-2 border-[#f2f3f8] flex items-center justify-center"
         >
           Go to Call Records
         </button>
