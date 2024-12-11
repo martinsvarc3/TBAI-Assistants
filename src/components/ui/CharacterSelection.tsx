@@ -289,7 +289,39 @@ export default function CharacterSelection() {
       [name]: prev[name] === 'description' ? 'scores' : 'description'
     }));
   };
+// Add after useState hooks and before return statement
+useLayoutEffect(() => {
+  const updateHeight = () => {
+    const height = document.documentElement.scrollHeight;
+    window.parent.postMessage({
+      type: 'RESIZE_IFRAME',
+      height: height
+    }, '*');
+  };
 
+  // Update height on initial render
+  updateHeight();
+
+  // Update height when panel state changes
+  const observer = new ResizeObserver(updateHeight);
+  observer.observe(document.body);
+
+  // Update height when images load
+  const images = document.querySelectorAll('img');
+  images.forEach(img => {
+    if (img.complete) {
+      updateHeight();
+    } else {
+      img.addEventListener('load', updateHeight);
+    }
+  });
+
+  return () => {
+    observer.disconnect();
+    images.forEach(img => img.removeEventListener('load', updateHeight));
+  };
+}, [activePanel]);
+  
 return (
     <div className="w-full bg-white rounded-[20px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
