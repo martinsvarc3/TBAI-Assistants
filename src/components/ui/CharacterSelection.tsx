@@ -36,13 +36,33 @@ const scrollbarStyles = `
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #f2f3f8 !important;
-    border-radius: 1px !important;
+    border-radius: 20px !important;
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-button {
+  /* Explicitly remove both up and down buttons */
+  .scrollbar-thin::-webkit-scrollbar-button:single-button {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    background: none !important;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-button:start {
+    display: none !important;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-button:end {
+    display: none !important;
+  }
+  
+  /* Remove any potential button spaces */
+  .scrollbar-thin::-webkit-scrollbar-button:vertical:start:decrement,
+  .scrollbar-thin::-webkit-scrollbar-button:vertical:end:increment,
+  .scrollbar-thin::-webkit-scrollbar-button:vertical:start:increment,
+  .scrollbar-thin::-webkit-scrollbar-button:vertical:end:decrement {
     display: none !important;
   }
 `
