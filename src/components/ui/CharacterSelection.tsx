@@ -365,7 +365,7 @@ return (
             <div className="p-4 flex flex-col items-center text-center">
               <div className="w-full px-5 mb-2">
                 <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px]">
-                  <div className="w-full h-full" style={{ border: '2px solid #E5E7EB' }}>
+                  <div className="w-full h-full" style={{ border: `2px solid ${character.color}` }}>
                     <Image
                       src={character.imageSrc}
                       alt={character.name}
