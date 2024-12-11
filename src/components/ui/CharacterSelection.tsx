@@ -115,6 +115,16 @@ const characters: Character[] = [
 ]
 
 function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
+  // Handle button click to communicate with parent window
+  const handleRecordsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Send message to parent window to handle navigation
+    window.parent.postMessage({
+      type: 'REDIRECT',
+      url: 'https://app.trainedbyai.com/call-records'
+    }, '*');
+  };
+
   const categories = [
     { key: 'overallPerformance', label: 'Overall Performance' },
     { key: 'engagement', label: 'Engagement' },
@@ -146,12 +156,12 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
             </div>
           ))}
         </div>
-        <a
-          href="https://app.trainedbyai.com/call-records"
-          className="w-full py-4 my-6 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 border-2 border-[#f2f3f8]"
+        <button
+          onClick={handleRecordsClick}
+          className="w-full h-[45px] my-6 rounded-[20px] text-black font-semibold text-lg transition-all hover:opacity-90 border-2 border-[#f2f3f8] flex items-center justify-center"
         >
           Go to Call Records
-        </a>
+        </button>
       </div>
     </>
   );
