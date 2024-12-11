@@ -185,7 +185,7 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
         </div>
         <button 
           onClick={handleRecordsClick}
-          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
+          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md"
         >
           Go to Call Records
         </button>
@@ -399,7 +399,7 @@ return (
                   START
                 </button>
               </div>
-              <div className="relative w-full mb-6 flex-grow">
+              <div className="relative w-full mb-6 flex-grow" style={{ paddingBottom: '10px' }}>
                 <button 
                   onClick={() => togglePanel(character.name)}
                   className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
