@@ -184,11 +184,14 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
           ))}
         </div>
         <button 
-          onClick={handleRecordsClick}
-          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
-        >
-          Go to Call Records
-        </button>
+  onClick={handleRecordsClick}
+  className="w-full py-3 rounded-full text-black font-semibold text-lg bg-white transition-all duration-200 hover:shadow-md"
+  style={{
+    boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.08)'
+  }}
+>
+  Go to Call Records
+</button>
       </div>
     </>
   );
