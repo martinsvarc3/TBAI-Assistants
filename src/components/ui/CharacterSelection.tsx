@@ -364,7 +364,7 @@ return (
           >
             <div className="p-4 flex flex-col items-center text-center">
               <div className="w-full px-5 mb-2">
-                <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px]">
+                <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px] transition-all duration-300 ease-in-out" style={{ perspective: '1000px' }}>
                   <div className="w-full h-full" style={{ border: `2px solid ${character.color}` }}>
                     <Image
                       src={character.imageSrc}
