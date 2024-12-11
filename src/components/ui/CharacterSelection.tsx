@@ -115,10 +115,8 @@ const characters: Character[] = [
 ]
 
 function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
-  // Handle button click to communicate with parent window
   const handleRecordsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Send message to parent window to handle navigation
     window.parent.postMessage({
       type: 'REDIRECT',
       url: 'https://app.trainedbyai.com/call-records'
@@ -156,9 +154,9 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
             </div>
           ))}
         </div>
-        <button
+        <button 
           onClick={handleRecordsClick}
-          className="w-full h-[70px] my-6 rounded-[20px] text-black font-semibold text-lg transition-all hover:opacity-90 border-2 border-[#f2f3f8] flex items-center justify-center"
+          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
         >
           Go to Call Records
         </button>
