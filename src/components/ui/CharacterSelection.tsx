@@ -357,10 +357,7 @@ return (
         {characters.map((character, index) => (
           <div 
             key={character.name} 
-            className={`relative rounded-[32px] overflow-hidden shadow-lg transition-shadow duration-300 hover:shadow-[0_0_20px_${character.color.replace('#', 'rgba(').slice(0, -1)},0.5)]`}
-            style={{ 
-              boxShadow: `0 0 15px ${character.color}`
-            }}
+             className="relative rounded-[32px] overflow-hidden"
           >
             <div className="p-4 flex flex-col items-center text-center">
               <div className="w-full px-5 mb-2">
