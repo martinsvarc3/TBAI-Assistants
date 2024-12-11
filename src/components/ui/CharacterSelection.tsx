@@ -165,61 +165,31 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
   return (
     <>
       <style jsx>{scrollbarStyles}</style>
-      <div className="w-full rounded-[32px] bg-white shadow-lg flex flex-col min-h-[600px]">
-        {/* Profile Section */}
-        <div className="flex flex-col items-center pt-6 pb-4">
-          <div className="w-32 h-32 rounded-[20px] overflow-hidden mb-4 relative">
-            <Image
-              src="[your-image-url]"
-              alt="Megan"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-3xl font-bold">Megan</h2>
-            <span className="px-3 py-1 bg-[#48C7AE] text-white rounded-full text-sm font-semibold">
-              EASY
-            </span>
-          </div>
-          <button className="w-[90%] py-3 bg-[#5f0bb9] text-white rounded-full font-bold text-lg mb-4">
-            START
-          </button>
-          <button className="w-[90%] py-3 bg-white shadow-md rounded-full font-semibold text-lg flex items-center justify-center gap-2">
-            Back to Description
-            <ChevronDown size={20} />
-          </button>
-        </div>
-
-        {/* Scores Section */}
-        <div className="flex-grow px-6 pb-6">
-          <h3 className="text-sm font-semibold mb-4">Score based on past 10 calls</h3>
-          <div className="overflow-y-scroll overflow-x-hidden scrollbar-thin h-[calc(100%-140px)]">
-            {categories.map(({ key, label }) => (
-              <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium">{label}</span>
-                  <span className="text-sm font-bold text-green-500">
-                    {scores[key as keyof typeof scores]}/100
-                  </span>
-                </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-green-500 rounded-full"
-                    style={{ width: `${scores[key as keyof typeof scores]}%` }}
-                  />
-                </div>
+      <div className="w-full text-sm flex flex-col h-full">
+        <div className="flex-grow overflow-y-scroll overflow-x-hidden scrollbar-thin">
+          <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">Score based on past 10 calls</h3>
+          {categories.map(({ key, label }) => (
+            <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className={`font-medium ${key === 'overallPerformance' ? 'text-base' : 'text-xs'}`}>{label}</span>
+                <span className={`font-bold text-green-500 ${key === 'overallPerformance' ? 'text-lg' : 'text-xs'}`}>{scores[key as keyof typeof scores]}/100</span>
               </div>
-            ))}
-          </div>
-          <div className="mt-6">
-            <button 
-              onClick={handleRecordsClick}
-              className="w-full py-3 rounded-full text-black font-semibold text-lg bg-white shadow-md hover:shadow-lg transition-all"
-            >
-              Go to Call Records
-            </button>
-          </div>
+              <div className={`bg-gray-200 rounded-full overflow-hidden ${key === 'overallPerformance' ? 'h-3' : 'h-2'}`}>
+                <div 
+                  className="h-full bg-green-500 rounded-full"
+                  style={{ width: `${scores[key as keyof typeof scores]}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 mb-6">
+          <button 
+            onClick={handleRecordsClick}
+            className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md"
+          >
+            Go to Call Records
+          </button>
         </div>
       </div>
     </>
