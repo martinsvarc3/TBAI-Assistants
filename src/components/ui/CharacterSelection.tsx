@@ -19,48 +19,29 @@ declare global {
 
 const scrollbarStyles = `
   .scrollbar-thin {
-    /* Firefox */
     scrollbar-width: thin;
-    scrollbar-color: #f2f3f8 transparent;
-    -moz-osx-scrollbar: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.6) transparent;
   }
   
-  /* Chrome, Safari, Edge styles */
   .scrollbar-thin::-webkit-scrollbar {
-    width: 4px !important;
-    height: 4px !important;
+    width: 2px !important;
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent !important;
-    border: none !important;
   }
   
-  /* Explicitly remove scrollbar buttons */
   .scrollbar-thin::-webkit-scrollbar-button {
-    height: 0 !important;
-    width: 0 !important;
     display: none !important;
   }
   
-  .scrollbar-thin::-webkit-scrollbar-corner {
-    background: transparent !important;
-  }
-  
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #f2f3f8 !important;
-    border-radius: 50px !important;
-    border: none !important;
-    min-height: 40px !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-radius: 1px !important;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #e4e5eb !important;
-  }
-
-  /* Hide when not in use */
-  .scrollbar-thin::-webkit-scrollbar-thumb:vertical {
-    border: none !important;
+    background: rgba(255, 255, 255, 0.8) !important;
   }
 `
 
