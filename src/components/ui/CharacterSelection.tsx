@@ -381,7 +381,7 @@ return (
                     {character.name}
                   </h2>
                   <div
-                    className="px-3 py-1 rounded-full text-white font-bold text-3xl"
+                    className="px-3 py-1 rounded-full text-white font-semibold text-sm"
                     style={{ backgroundColor: character.color }}
                   >
                     {character.difficulty.toUpperCase()}
