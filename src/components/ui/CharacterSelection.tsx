@@ -143,30 +143,13 @@ const characters: Character[] = [
   },
 ]
 
-function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
-  const handleRecordsClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.parent.postMessage({
-      type: 'REDIRECT',
-      url: 'https://app.trainedbyai.com/call-records'
-    }, '*');
-  };
-
-  const categories = [
-    { key: 'overallPerformance', label: 'Overall Performance' },
-    { key: 'engagement', label: 'Engagement' },
-    { key: 'objectionHandling', label: 'Objection Handling' },
-    { key: 'informationGathering', label: 'Information Gathering' },
-    { key: 'programExplanation', label: 'Program Explanation' },
-    { key: 'closingSkills', label: 'Closing Skills' },
-    { key: 'overallEffectiveness', label: 'Overall Effectiveness' },
   ];
 
   return (
     <>
       <style jsx>{scrollbarStyles}</style>
-      <div className="w-full text-sm h-[360px] flex flex-col justify-between">
-        <div className="flex-grow overflow-y-scroll overflow-x-hidden scrollbar-thin">
+      <div className="w-full text-sm h-[320px] flex flex-col">
+        <div className="flex-grow overflow-y-auto scrollbar-thin">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">Score based on past 10 calls</h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
@@ -183,14 +166,12 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
             </div>
           ))}
         </div>
-        <div className="pt-6">
-          <button 
-            onClick={handleRecordsClick}
-            className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md"
-          >
-            Go to Call Records
-          </button>
-        </div>
+        <button 
+          onClick={handleRecordsClick}
+          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
+        >
+          Go to Call Records
+        </button>
       </div>
     </>
   );
