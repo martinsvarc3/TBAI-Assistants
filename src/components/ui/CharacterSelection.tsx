@@ -146,12 +146,12 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
             </div>
           ))}
         </div>
-        <button
-          className="w-full py-4 my-6 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md"
-          onClick={() => {/* Add navigation logic here */}}
+        <a
+          href="https://app.trainedbyai.com/call-records"
+          className="w-full py-4 my-6 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 border-2 border-[#f2f3f8]"
         >
           Go to Call Records
-        </button>
+        </a>
       </div>
     </>
   );
