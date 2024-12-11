@@ -361,26 +361,16 @@ return (
           >
             <div className="p-4 flex flex-col items-center text-center">
               <div className="w-full px-5 mb-2">
-                <div 
-  className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px]"
-  style={{ 
-    border: `2px solid ${
-      character.name === 'Megan' ? '#23c55f' : 
-      character.name === 'David' ? '#FAA248' : 
-      character.name === 'Linda' ? '#EC1B26' : 
-      ''
-    }`
-  }}
->
-  <div className="w-full h-full">
-    <Image
-      src={character.imageSrc}
-      alt={character.name}
-      fill
-      className="object-cover rounded-[20px]"
-    />
-  </div>
-</div>
+                <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px] transition-all duration-300 ease-in-out" style={{ perspective: '1000px' }}>
+                  <div className="w-full h-full" style={{ border: `2px solid ${character.color}` }}>
+                    <Image
+                      src={character.imageSrc}
+                      alt={character.name}
+                      fill
+                      className="object-cover rounded-[20px]"
+                    />
+                  </div>
+                </div>
               </div>
               <div className="w-full mb-2 flex flex-col items-center">
                 <div className="flex items-center gap-2 py-1">
