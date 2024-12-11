@@ -377,7 +377,7 @@ return (
               </div>
               <div className="w-full mb-2 flex flex-col items-center">
                 <div className="flex items-center gap-2 py-1">
-                  <h2 className="text-sm font-bold text-black">
+                  <h2 className="text-2xl font-bold text-black">
                     {character.name}
                   </h2>
                   <div
