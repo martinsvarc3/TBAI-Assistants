@@ -21,25 +21,37 @@ const scrollbarStyles = `
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: #f2f3f8 transparent;
-    padding-right: 8px; /* Add padding to prevent content overlap with scrollbar */
   }
+  
   .scrollbar-thin::-webkit-scrollbar {
     width: 4px;
   }
+  
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
-    margin-top: 40px; /* Align with Overall Performance start */
   }
-  .scrollbar-thin::-webkit-scrollbar-button {
-    display: none; /* Remove arrows */
+  
+  /* Remove scroll arrows */
+  .scrollbar-thin::-webkit-scrollbar-button:start:decrement,
+  .scrollbar-thin::-webkit-scrollbar-button:end:increment {
+    display: none;
   }
+  
+  /* Style the thumb with perfect rounded ends */
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #f2f3f8;
-    border-radius: 10px;
-    transition: background-color 0.2s ease;
+    border-radius: 2px;
+    min-height: 40px;
   }
+  
+  /* Optional hover state */
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: #e1e2e7;
+    background-color: #e4e5eb;
+  }
+  
+  /* Hide scrollbar when not hovering */
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
 `
 
