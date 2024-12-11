@@ -19,39 +19,48 @@ declare global {
 
 const scrollbarStyles = `
   .scrollbar-thin {
+    /* Firefox */
     scrollbar-width: thin;
     scrollbar-color: #f2f3f8 transparent;
+    -moz-osx-scrollbar: thin;
   }
   
+  /* Chrome, Safari, Edge styles */
   .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
+    width: 4px !important;
+    height: 4px !important;
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
+    background: transparent !important;
+    border: none !important;
   }
   
-  /* Remove scroll arrows */
-  .scrollbar-thin::-webkit-scrollbar-button:start:decrement,
-  .scrollbar-thin::-webkit-scrollbar-button:end:increment {
-    display: none;
+  /* Explicitly remove scrollbar buttons */
+  .scrollbar-thin::-webkit-scrollbar-button {
+    height: 0 !important;
+    width: 0 !important;
+    display: none !important;
   }
   
-  /* Style the thumb with perfect rounded ends */
+  .scrollbar-thin::-webkit-scrollbar-corner {
+    background: transparent !important;
+  }
+  
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #f2f3f8;
-    border-radius: 2px;
-    min-height: 40px;
+    background: #f2f3f8 !important;
+    border-radius: 50px !important;
+    border: none !important;
+    min-height: 40px !important;
   }
-  
-  /* Optional hover state */
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: #e4e5eb;
+    background: #e4e5eb !important;
   }
-  
-  /* Hide scrollbar when not hovering */
-  .scrollbar-thin {
-    scrollbar-width: thin;
+
+  /* Hide when not in use */
+  .scrollbar-thin::-webkit-scrollbar-thumb:vertical {
+    border: none !important;
   }
 `
 
@@ -154,10 +163,10 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
     <>
       <style jsx>{scrollbarStyles}</style>
       <div className="w-full text-sm h-[320px] flex flex-col">
-        <div className="flex-grow overflow-y-auto pr-2 scrollbar-thin">
+        <div className="flex-grow overflow-y-auto scrollbar-thin">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">Score based on past 10 calls</h3>
           {categories.map(({ key, label }) => (
-            <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3">
+            <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
               <div className="flex justify-between items-center mb-1">
                 <span className={`font-medium ${key === 'overallPerformance' ? 'text-base' : 'text-xs'}`}>{label}</span>
                 <span className={`font-bold text-green-500 ${key === 'overallPerformance' ? 'text-lg' : 'text-xs'}`}>{scores[key as keyof typeof scores]}/100</span>
