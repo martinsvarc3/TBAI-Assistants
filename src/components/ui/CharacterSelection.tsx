@@ -235,45 +235,16 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
             </div>
           ))}
         </div>
-        <button
-  className="w-full py-3 rounded-[20px] text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
-  style={{
-    backgroundColor: "#5f0bb9",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)"
-  }}
-  disabled={character.locked}
-  onClick={() => handleStart(character)}
->
-  START
-</button>
-
-<button 
-  onClick={() => togglePanel(character.name)}
-  className="w-full py-3 rounded-[20px] text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white"
-  style={{
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)"
-  }}
->
-  <span>
-    {activePanel[character.name] === 'description' ? 'View Performance' : 'Back to Description'}
-  </span>
-  {activePanel[character.name] === 'description' ? (
-    <ChevronDown size={20} className="inline-block ml-2" />
-  ) : (
-    <ChevronUp size={20} className="inline-block ml-2" />
-  )}
-</button>
-
-{/* In ScorePanel component */}
-<button 
-  onClick={handleRecordsClick}
-  className="w-full py-3 rounded-[20px] text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white"
-  style={{
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)"
-  }}
->
-  Go to Call Records
-</button>
+        <button 
+          onClick={handleRecordsClick}
+          className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
+        >
+          Go to Call Records
+        </button>
+      </div>
+    </>
+  );
+}
 
 function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previousAssistant: string; isLastLocked: boolean; difficulty: string }) {
   const glowColor = 
