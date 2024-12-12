@@ -213,7 +213,6 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
               ? 'rgba(252, 161, 71, 0.5)'
               : 'rgba(220, 38, 38, 0.5)'
         }`
-        margin: '-2px' // This ensures the overlay covers the border completely
       }}
     >
       <div className="w-[400px] h-[400px] p-6 pt-16 text-center flex flex-col items-center justify-start">
