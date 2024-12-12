@@ -350,9 +350,9 @@ useLayoutEffect(() => {
     images.forEach(img => img.removeEventListener('load', updateHeight));
   };
 }, [activePanel]);
-
+  
 return (
-  <div className="w-full bg-white rounded-[20px]">
+    <div className="w-full bg-white rounded-[20px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
         {characters.map((character, index) => (
           <div 
@@ -366,7 +366,6 @@ return (
                   ? '#FAA248'
                   : '#EC1B26'
                  }`
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1)'
               }}
             >
             <div className="p-4 flex flex-col items-center text-center">
