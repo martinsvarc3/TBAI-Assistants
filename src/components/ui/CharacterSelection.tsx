@@ -357,9 +357,9 @@ return (
         {characters.map((character, index) => (
           <div 
             key={character.name} 
-             className="relative rounded-[32px] overflow-hidden"
+             className="relative rounded-[20px] overflow-hidden"
              style={{
-               border: `2px solid ${
+               border: `4px solid ${
                  character.name === 'Megan'
                  ? '#23c55f'
                  : character.name === 'David'
