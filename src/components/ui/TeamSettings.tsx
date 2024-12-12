@@ -73,9 +73,16 @@ export default function TeamSettings() {
     );
   }
 
-  return (
-    <div className="fixed bottom-4 right-4 bg-white p-6 rounded-lg shadow-xl w-80">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Team Settings</h3>
-        <button
-          onClick={() => setIsOpen(false)}
+return (
+  <div className="fixed bottom-4 right-4 bg-white p-6 rounded-lg shadow-xl w-80">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-lg font-semibold">Team Settings</h3>
+      <button
+        onClick={() => setIsOpen(false)}
+      >
+        {/* You might want to add a close icon or text here */}
+      </button>
+    </div>
+    {/* Rest of the component content */}
+  </div>
+)
