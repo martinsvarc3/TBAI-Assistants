@@ -85,4 +85,5 @@ return (
     </div>
     {/* Rest of the component content */}
   </div>
-)
+ );
+} 
