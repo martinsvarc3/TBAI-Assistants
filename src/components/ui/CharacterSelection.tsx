@@ -204,7 +204,7 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
 
   return (
     <div 
-      className="absolute inset-0 rounded-[32px] flex items-center justify-center bg-black/40 backdrop-blur-sm" 
+      className="absolute inset-0 rounded-[20px] flex items-center justify-center bg-black/40 backdrop-blur-sm" 
       style={{ 
         boxShadow: `0 0 20px ${
           difficulty === 'Easy' 
