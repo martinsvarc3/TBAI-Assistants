@@ -438,7 +438,7 @@ return (
         {characters.map((character, index) => (
           <div 
             key={character.name} 
-             className="relative rounded-[20px] overflow-hidden"
+             className="relative rounded-[25px] overflow-hidden"
              style={{
                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)' // Light black shadow
               }}
