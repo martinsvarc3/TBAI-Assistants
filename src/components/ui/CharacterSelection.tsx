@@ -85,6 +85,16 @@ interface Character {
     overallEffectiveness: number
   }
 }
+interface PerformanceMetrics {
+  overall_performance: number;
+  engagement: number;
+  objection_handling: number;
+  information_gathering: number;
+  program_explanation: number;
+  closing_skills: number;
+  overall_effectiveness: number;
+  total_calls: number;
+}
 
 const characters: Character[] = [
   {
@@ -143,7 +153,34 @@ const characters: Character[] = [
   },
 ]
 
-function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
+function ScorePanel({ characterName, memberId }: { characterName: string; memberId: string }) {
+  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${characterName}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setMetrics(data);
+        } else {
+          console.error('Failed to fetch metrics');
+        }
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (memberId && characterName) {
+      fetchMetrics();
+    }
+  }, [memberId, characterName]);
+
   const handleRecordsClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.parent.postMessage({
@@ -152,14 +189,22 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
     }, '*');
   };
 
+  if (isLoading) {
+    return <div className="text-center py-4">Loading metrics...</div>;
+  }
+
+  if (!metrics) {
+    return <div className="text-center py-4">No performance data available</div>;
+  }
+
   const categories = [
-    { key: 'overallPerformance', label: 'Overall Performance' },
+    { key: 'overall_performance', label: 'Overall Performance' },
     { key: 'engagement', label: 'Engagement' },
-    { key: 'objectionHandling', label: 'Objection Handling' },
-    { key: 'informationGathering', label: 'Information Gathering' },
-    { key: 'programExplanation', label: 'Program Explanation' },
-    { key: 'closingSkills', label: 'Closing Skills' },
-    { key: 'overallEffectiveness', label: 'Overall Effectiveness' },
+    { key: 'objection_handling', label: 'Objection Handling' },
+    { key: 'information_gathering', label: 'Information Gathering' },
+    { key: 'program_explanation', label: 'Program Explanation' },
+    { key: 'closing_skills', label: 'Closing Skills' },
+    { key: 'overall_effectiveness', label: 'Overall Effectiveness' },
   ];
 
   return (
@@ -167,17 +212,23 @@ function ScorePanel({ scores }: { scores: NonNullable<Character['scores']> }) {
       <style jsx>{scrollbarStyles}</style>
       <div className="w-full text-sm h-[320px] flex flex-col">
         <div className="flex-grow overflow-y-auto scrollbar-thin">
-          <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">Score based on past 10 calls</h3>
+          <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">
+            Score based on past {metrics.total_calls} calls
+          </h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
               <div className="flex justify-between items-center mb-1">
-                <span className={`font-medium ${key === 'overallPerformance' ? 'text-base' : 'text-xs'}`}>{label}</span>
-                <span className={`font-bold text-green-500 ${key === 'overallPerformance' ? 'text-lg' : 'text-xs'}`}>{scores[key as keyof typeof scores]}/100</span>
+                <span className={`font-medium ${key === 'overall_performance' ? 'text-base' : 'text-xs'}`}>
+                  {label}
+                </span>
+                <span className={`font-bold text-green-500 ${key === 'overall_performance' ? 'text-lg' : 'text-xs'}`}>
+                  {metrics[key as keyof PerformanceMetrics] || 0}/100
+                </span>
               </div>
-              <div className={`bg-gray-200 rounded-full overflow-hidden ${key === 'overallPerformance' ? 'h-3' : 'h-2'}`}>
+              <div className={`bg-gray-200 rounded-full overflow-hidden ${key === 'overall_performance' ? 'h-3' : 'h-2'}`}>
                 <div 
                   className="h-full bg-green-500 rounded-full"
-                  style={{ width: `${scores[key as keyof typeof scores]}%` }}
+                  style={{ width: `${metrics[key as keyof PerformanceMetrics] || 0}%` }}
                 />
               </div>
             </div>
@@ -284,33 +335,62 @@ export default function CharacterSelection() {
   }, []);
 
   const handleStart = async (character: Character) => {
-    console.log('Start button clicked for:', character.name);
+  console.log('Start button clicked for:', character.name);
 
-    if (!memberId) {
-      console.error('No member ID found');
-      return;
+  if (!memberId) {
+    console.error('No member ID found');
+    return;
+  }
+
+  // Record the start of a new interaction
+  try {
+    const response = await fetch('/api/character-performance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        memberId,
+        teamId: 'team_default', // You can modify this based on your needs
+        characterName: character.name,
+        metrics: {
+          overall_performance: 85, // You'll need to replace these with actual metrics
+          engagement: 82,
+          objection_handling: 88,
+          information_gathering: 84,
+          program_explanation: 86,
+          closing_skills: 83,
+          overall_effectiveness: 85
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to record interaction');
     }
+  } catch (error) {
+    console.error('Error recording interaction:', error);
+  }
 
-    const apiUrls: Record<string, string> = {
-      Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
-      David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
-      Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
-    };
-
-    const apiUrl = apiUrls[character.name];
-    if (!apiUrl) {
-      console.error('No API URL found for character:', character.name);
-      return;
-    }
-
-    const fullUrl = `${apiUrl}?member_ID=${memberId}`;
-    
-    // Instead of direct navigation, send message to parent
-    window.parent.postMessage({
-      type: 'REDIRECT',
-      url: fullUrl
-    }, '*');
+  const apiUrls: Record<string, string> = {
+    Megan: 'https://hook.eu2.make.com/0p7hdgmvngx1iraz2a6c90z546ahbqex',
+    David: 'https://hook.eu2.make.com/54eb38fg3owjjxp1q9nf95r4dg9ex6op',
+    Linda: 'https://hook.eu2.make.com/jtgmjkcvgsltevf475nhjsqohgks97rj'
   };
+
+  const apiUrl = apiUrls[character.name];
+  if (!apiUrl) {
+    console.error('No API URL found for character:', character.name);
+    return;
+  }
+
+  const fullUrl = `${apiUrl}?member_ID=${memberId}`;
+  
+  window.parent.postMessage({
+    type: 'REDIRECT',
+    url: fullUrl
+  }, '*');
+};
 
   const togglePanel = (name: string) => {
     setActivePanel(prev => ({
@@ -462,7 +542,10 @@ return (
                         transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
                         className="absolute inset-0 overflow-hidden"
                       >
-                        <ScorePanel scores={character.scores} />
+                        <ScorePanel 
+                          characterName={character.name}
+                          memberId={memberId || ''}
+                        />
                       </motion.div>
                     )}
                   </AnimatePresence>
