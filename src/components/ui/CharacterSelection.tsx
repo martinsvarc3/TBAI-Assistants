@@ -440,13 +440,8 @@ return (
             key={character.name} 
              className="relative rounded-[20px] overflow-hidden"
              style={{
-               border: `4px solid ${
-                 character.name === 'Megan'
-                 ? '#f2f3f8'
-                 : character.name === 'David'
-                  ? '#f2f3f8'
-                  : '#f2f3f8'
-                 }`
+               border: `4px solid #f2f3f8`,
+               boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)' // Light black shadow
               }}
             >
             <div className="p-4 flex flex-col items-center text-center">
