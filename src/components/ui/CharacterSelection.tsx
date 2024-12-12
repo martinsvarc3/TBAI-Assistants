@@ -1,5 +1,6 @@
 'use client'
 
+import TeamSettings from './TeamSettings'
 import { useState, useEffect, useLayoutEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
