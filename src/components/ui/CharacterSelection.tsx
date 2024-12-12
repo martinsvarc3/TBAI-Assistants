@@ -361,10 +361,10 @@ return (
              style={{
                border: `4px solid ${
                  character.name === 'Megan'
-                 ? '#23c55f'
+                 ? '#f2f3f8'
                  : character.name === 'David'
-                  ? '#FAA248'
-                  : '#EC1B26'
+                  ? '#f2f3f8'
+                  : '#f2f3f8'
                  }`
               }}
             >
