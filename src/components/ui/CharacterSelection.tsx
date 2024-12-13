@@ -1,5 +1,6 @@
 'use client'
 
+import TeamSettings from './TeamSettings'
 import { useState, useEffect, useLayoutEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -302,7 +303,6 @@ const [characterMetrics, setCharacterMetrics] = useState<{
     closing_skills: number;
     overall_effectiveness: number;
     total_calls: number;
-    past_calls_count: number; // Added this line
   } | null;
 }>({});
 
@@ -672,6 +672,7 @@ return (
           );
         })}
       </div>
+      <TeamSettings />
     </div>
 );
 }
