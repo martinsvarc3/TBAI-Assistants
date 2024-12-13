@@ -334,6 +334,7 @@ useEffect(() => {
           const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
           if (response.ok) {
             const data = await response.json();
+            console.log('Initial performance goals:', data);
             setPerformanceGoals(data);
           }
         } catch (error) {
@@ -448,37 +449,46 @@ useEffect(() => {
 }, [memberId]);
 
 useEffect(() => {
-  const fetchAllMetrics = async () => {
-    if (!memberId) return;
-    
-    const metrics: typeof characterMetrics = {};
-    
-    for (const character of characters) {
-      try {
-        const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          metrics[character.name] = data;
-        } else {
-          console.error(`Failed to fetch metrics for ${character.name}`);
-          metrics[character.name] = null;
+  // Set up polling for updates
+  const pollInterval = setInterval(async () => {
+    if (memberId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const teamId = urlParams.get('teamId');
+      
+      // Poll performance goals
+      if (teamId) {
+        try {
+          const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Polled performance goals:', data);
+            setPerformanceGoals(data);
+          }
+        } catch (error) {
+          console.error('Error polling performance goals:', error);
         }
-      } catch (error) {
-        console.error(`Error fetching metrics for ${character.name}:`, error);
-        metrics[character.name] = null;
       }
-    }
-    
-    setCharacterMetrics(metrics);
-    setIsLoading(false);
-  };
 
-  if (memberId) {
-    fetchAllMetrics();
-  }
+      // Poll metrics
+      const metrics: typeof characterMetrics = {};
+      for (const character of characters) {
+        try {
+          const response = await fetch(
+            `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            metrics[character.name] = data;
+          }
+        } catch (error) {
+          console.error(`Error polling metrics for ${character.name}:`, error);
+        }
+      }
+      setCharacterMetrics(metrics);
+    }
+  }, 5000); // Poll every 5 seconds
+
+  return () => clearInterval(pollInterval);
 }, [memberId]);
   
 useLayoutEffect(() => {
