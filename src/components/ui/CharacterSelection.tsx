@@ -145,8 +145,8 @@ function ScorePanel({
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${characterName}`
-        );
+  `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${characterName}`
+);
         if (response.ok) {
           const data = await response.json();
           setMetrics(data);
@@ -307,6 +307,7 @@ function LockedOverlay({
 
 
 export default function CharacterSelection() {
+  const [teamId, setTeamId] = useState<string | null>(null);
 const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
   Megan: 'description',
   David: 'description',
@@ -315,6 +316,12 @@ const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 
 
 const [memberId, setMemberId] = useState<string | null>(null);
 const [isLoading, setIsLoading] = useState(true);
+
+useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tid = urlParams.get('teamId');
+    setTeamId(tid);
+  }, []);
 
 const [characterMetrics, setCharacterMetrics] = useState<{
   [key: string]: {
@@ -359,8 +366,8 @@ const [performanceGoals, setPerformanceGoals] = useState({
     for (const character of characters) {
       try {
         const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
-        );
+  `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`
+);
         
         if (response.ok) {
           const data = await response.json();
@@ -400,15 +407,15 @@ const [performanceGoals, setPerformanceGoals] = useState({
 
   try {
     const response = await fetch('/api/character-performance', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        memberId,
-        teamId: 'team_default',
-        characterName: character.name,
-        metrics: {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    memberId,
+    teamId: 'teamId',  // This needs to be changed
+    characterName: character.name,
+    metrics: {
           overall_performance: currentMetrics.overall_performance,
           engagement: currentMetrics.engagement,
           objection_handling: currentMetrics.objection_handling,
@@ -464,8 +471,8 @@ useEffect(() => {
     for (const character of characters) {
       try {
         const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
-        );
+  `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${character.name}`
+);
         if (response.ok) {
           const data = await response.json();
           metrics[character.name] = data;
@@ -492,7 +499,7 @@ useEffect(() => {
     for (const character of characters) {
       try {
         const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+          `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${character.name}`
         );
         
         if (response.ok) {
@@ -520,9 +527,14 @@ useEffect(() => {
 useEffect(() => {
   const fetchPerformanceGoals = async () => {
     try {
-      console.log('Fetching performance goals for team_default');
-      const response = await fetch('/api/performance-goals?teamId=team_default');
+      // Get teamId from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const teamId = urlParams.get('teamId');
+
+      console.log('Fetching performance goals for teamId:', teamId);
+      const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
       console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
         console.log('Fetched performance goals:', data);
