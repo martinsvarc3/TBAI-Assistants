@@ -145,7 +145,7 @@ function ScorePanel({
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-  `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${characterName}`
+  `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${character.name}`
 );
         if (response.ok) {
           const data = await response.json();
