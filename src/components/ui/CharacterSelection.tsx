@@ -435,128 +435,137 @@ useLayoutEffect(() => {
 return (
     <div className="w-full bg-white rounded-[20px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
-        {characters.map((character, index) => (
-          <div 
-            key={character.name} 
-             className="relative rounded-[25px] overflow-hidden"
-             style={{
-               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)' // Light black shadow
-              }}
-            >
-            <div className="p-4 flex flex-col items-center text-center">
-              <div className="w-full px-5 mb-2">
-                <div 
-  className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px] transition-all duration-300 ease-in-out" 
-  style={{ 
-    perspective: '1000px',
-  }}
->
-  <div 
-    className="w-full h-full absolute inset-0" 
-    style={{ 
-      border: `6px solid ${
-        character.name === 'Megan'
-          ? 'rgba(35, 197, 95, 0.6)'
-          : character.name === 'David'
-            ? 'rgba(250, 162, 72, 0.6)'
-            : 'rgba(236, 27, 38, 0.6)'
-      }`,
-      borderRadius: '20px',
-      zIndex: 2
-    }}
-  />
-  <div className="w-full h-full relative">
-    <Image
-      src={character.imageSrc}
-      alt={character.name}
-      fill
-      className="object-cover rounded-[14px]"
-    />
-  </div>
-</div>
-              </div>
-              <div className="w-full mb-2 flex flex-col items-center">
-                <div className="flex items-center gap-2 py-1">
-                  <h2 className="text-2xl font-bold text-black">
-                    {character.name}
-                  </h2>
-                  <div
-                    className="px-3 py-1 rounded-full text-white font-semibold text-sm"
-                    style={{ backgroundColor: character.color }}
-                  >
-                    {character.difficulty.toUpperCase()}
+        {characters.map((character, index) => {
+          // Console log to debug current metrics
+          console.log(`Checking ${character.name}:`, characterMetrics);
+
+          // Previous character's metrics (will be undefined for Megan)
+          const prevCharacter = index > 0 ? characters[index - 1] : null;
+          const prevCharacterMetrics = prevCharacter ? characterMetrics[prevCharacter.name] : null;
+
+          // Determine if this character should be unlocked
+          let shouldBeUnlocked = false;
+          
+          if (index === 0) {
+            // Megan is always unlocked
+            shouldBeUnlocked = true;
+          } else if (prevCharacterMetrics && prevCharacterMetrics.overall_performance >= 85) {
+            // Character should be unlocked if previous character has performance >= 85
+            shouldBeUnlocked = true;
+          }
+
+          // Update the character's locked status
+          const updatedCharacter = {
+            ...character,
+            locked: character.locked && !shouldBeUnlocked
+          };
+
+          // Debug log
+          console.log(`${character.name} unlock status:`, {
+            previousCharacter: prevCharacter?.name,
+            previousPerformance: prevCharacterMetrics?.overall_performance,
+            shouldBeUnlocked,
+            isLocked: updatedCharacter.locked
+          });
+
+          return (
+            <div key={character.name} className="relative rounded-[32px] overflow-hidden">
+              <div className="p-4 flex flex-col items-center text-center">
+                <div className="w-full px-5 mb-2">
+                  <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-[20px] transition-all duration-300 ease-in-out" style={{ perspective: '1000px' }}>
+                    <div className="w-full h-full" style={{ border: `2px solid ${character.color}` }}>
+                      <Image
+                        src={character.imageSrc}
+                        alt={character.name}
+                        fill
+                        className="object-cover rounded-[20px]"
+                      />
+                    </div>
                   </div>
                 </div>
-                <button
-                  className="w-full py-3 rounded-full text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
-                  style={{
-                    backgroundColor: "#5f0bb9",
-                    boxShadow: "0 4px 14px 0 rgba(95, 11, 185, 0.39)"
-                  }}
-                  disabled={character.locked}
-                  onClick={() => handleStart(character)}
-                >
-                  START
-                </button>
-              </div>
-              <div className="relative w-full mb-6 flex-grow">
-                <button 
-                  onClick={() => togglePanel(character.name)}
-                  className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
-                >
-                  <span>
-                    {activePanel[character.name] === 'description' ? 'View Performance' : 'Back to Description'}
-                  </span>
-                  {activePanel[character.name] === 'description' ? (
-                    <ChevronDown size={20} className="inline-block ml-2" />
-                  ) : (
-                    <ChevronUp size={20} className="inline-block ml-2" />
-                  )}
-                </button>
-                <div className="min-h-[300px] overflow-hidden relative">
-                  <AnimatePresence initial={false}>
+                <div className="w-full mb-2 flex flex-col items-center">
+                  <div className="flex items-center gap-2 py-1">
+                    <h2 className="text-2xl font-bold text-black">
+                      {character.name}
+                    </h2>
+                    <div
+                      className="px-3 py-1 rounded-full text-white font-semibold text-sm"
+                      style={{ backgroundColor: character.color }}
+                    >
+                      {character.difficulty.toUpperCase()}
+                    </div>
+                  </div>
+                  <button
+                    className="w-full py-3 rounded-full text-white font-bold text-lg transition-all hover:opacity-90 hover:shadow-lg"
+                    style={{
+                      backgroundColor: "#5f0bb9",
+                      boxShadow: "0 4px 14px 0 rgba(95, 11, 185, 0.39)"
+                    }}
+                    disabled={updatedCharacter.locked}
+                    onClick={() => handleStart(character)}
+                  >
+                    START
+                  </button>
+                </div>
+                <div className="relative w-full mb-6 flex-grow">
+                  <button 
+                    onClick={() => togglePanel(character.name)}
+                    className="w-full py-3 rounded-full text-black font-semibold text-lg transition-all hover:opacity-90 hover:shadow-lg bg-white shadow-md mb-6"
+                  >
+                    <span>
+                      {activePanel[character.name] === 'description' ? 'View Performance' : 'Back to Description'}
+                    </span>
                     {activePanel[character.name] === 'description' ? (
-                      <motion.div
-                        key="description"
-                        initial={{ y: "100%", opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: "-100%", opacity: 0 }}
-                        transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                        className="absolute inset-0"
-                      >
-                        <p className="text-gray-600 text-base leading-relaxed text-center flex items-center justify-center h-full">
-                          {character.description}
-                        </p>
-                      </motion.div>
-                    ) : character.scores && (
-                      <motion.div
-                        key="scores"
-                        initial={{ y: "-100%", opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: "100%", opacity: 0 }}
-                        transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                        className="absolute inset-0 overflow-hidden"
-                      >
-                        <ScorePanel 
-                          characterName={character.name}
-                          memberId={memberId || ''}
-                        />
-                      </motion.div>
+                      <ChevronDown size={20} className="inline-block ml-2" />
+                    ) : (
+                      <ChevronUp size={20} className="inline-block ml-2" />
                     )}
-                  </AnimatePresence>
+                  </button>
+                  <div className="min-h-[300px] overflow-hidden relative">
+                    <AnimatePresence initial={false}>
+                      {activePanel[character.name] === 'description' ? (
+                        <motion.div
+                          key="description"
+                          initial={{ y: "100%", opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: "-100%", opacity: 0 }}
+                          transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                          className="absolute inset-0"
+                        >
+                          <p className="text-gray-600 text-base leading-relaxed text-center flex items-center justify-center h-full">
+                            {character.description}
+                          </p>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="scores"
+                          initial={{ y: "-100%", opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: "100%", opacity: 0 }}
+                          transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                          className="absolute inset-0 overflow-hidden"
+                        >
+                          <ScorePanel 
+                            characterName={character.name}
+                            memberId={memberId || ''}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
+              {updatedCharacter.locked && (
+                <LockedOverlay 
+                  previousAssistant={prevCharacter?.name || ''}
+                  isLastLocked={index === characters.length - 1}
+                  difficulty={character.difficulty}
+                />
+              )}
             </div>
-            {character.locked && (
-              <LockedOverlay 
-                previousAssistant={characters[index - 1].name} 
-                isLastLocked={index === characters.length - 1}
-                difficulty={character.difficulty}
-              />
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
+      <TeamSettings />
     </div>
-    );
-}
+);
