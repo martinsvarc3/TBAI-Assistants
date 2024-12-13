@@ -24,22 +24,28 @@ interface PerformanceMetrics {
 }
 
 export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const memberId = searchParams.get('memberId');
-    const teamId = searchParams.get('teamId');
-    const characterName = searchParams.get('characterName');
+try {
+  const { searchParams } = new URL(request.url);
+  const memberId = searchParams.get('memberId');
+  const teamId = searchParams.get('teamId');
+  const characterName = searchParams.get('characterName');
 
-    if (!memberId && !teamId) {
-      return NextResponse.json(
-        { error: 'Member ID or Team ID is required' },
-        { status: 400, headers: corsHeaders() }
-      );
-    }
+  console.log('Received request with params:', { memberId, teamId, characterName });
 
-    const pool = createPool({
-      connectionString: process.env.visionboard_PRISMA_URL
-    });
+  if (!memberId && !teamId) {
+    console.error('Missing required parameters');
+    return NextResponse.json(
+      { error: 'Member ID or Team ID is required' },
+      { status: 400, headers: corsHeaders() }
+    );
+  }
+
+  const pool = createPool({
+    connectionString: process.env.visionboard_PRISMA_URL
+  });
+
+  // Log the SQL query params
+  console.log('Executing query with params:', { memberId, teamId, characterName });
 
     // If only teamId is provided, return performance goals
     if (teamId && !memberId && !characterName) {
