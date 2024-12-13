@@ -1,6 +1,5 @@
 'use client'
 
-import TeamSettings from './TeamSettings'
 import { useState, useEffect, useLayoutEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -127,7 +126,18 @@ const characters: Character[] = [
   },
 ]
 
-function ScorePanel({ characterName, memberId }: { characterName: string; memberId: string }) {
+function ScorePanel({ 
+  characterName, 
+  memberId,
+  performanceGoals 
+}: { 
+  characterName: string; 
+  memberId: string;
+  performanceGoals: {
+    overall_performance_goal: number;
+    number_of_calls_average: number;
+  }; 
+}) {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -187,8 +197,8 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
       <div className="w-full text-sm h-[320px] flex flex-col">
         <div className="flex-grow overflow-y-auto scrollbar-thin">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">
-            Score based on past {metrics.total_calls} calls
-          </h3>
+            Score based on past {performanceGoals.number_of_calls_average} calls
+            </h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
               <div className="flex justify-between items-center mb-1">
@@ -219,7 +229,20 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
   );
 }
 
-function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previousAssistant: string; isLastLocked: boolean; difficulty: string }) {
+function LockedOverlay({ 
+  previousAssistant, 
+  isLastLocked, 
+  difficulty,
+  performanceGoals
+}: { 
+  previousAssistant: string; 
+  isLastLocked: boolean; 
+  difficulty: string;
+  performanceGoals: {
+    overall_performance_goal: number;
+    number_of_calls_average: number;
+  };
+}) {
   const glowColor = 
     difficulty === 'Easy' 
       ? 'rgba(72, 199, 174, 0.5)' 
@@ -259,19 +282,19 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
           <p className="text-white text-xl mb-8">
             {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
-              : `Achieve Overall Performance above 85 from the past 10 calls on ${previousAssistant} to Unlock.`
+              : `Achieve Overall Performance above ${performanceGoals.overall_performance_goal} from the past ${performanceGoals.number_of_calls_average} calls on ${previousAssistant} to Unlock.`
             }
           </p>
           {!isLastLocked && (
             <div className="w-full">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Overall Performance</span>
-                <span className="text-sm font-bold text-white">85/100</span>
+                <span className="text-sm font-bold text-white">{performanceGoals.overall_performance_goal}/100</span>
               </div>
               <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
                 <div 
                   className="h-full bg-gradient-to-r from-white to-gray-200 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: '85%' }}
+                  style={{ width: `${performanceGoals.overall_performance_goal}%` }}
                 />
               </div>
             </div>
@@ -279,7 +302,7 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 
@@ -303,8 +326,14 @@ const [characterMetrics, setCharacterMetrics] = useState<{
     closing_skills: number;
     overall_effectiveness: number;
     total_calls: number;
+    past_calls_count: number; // Added this line
   } | null;
 }>({});
+
+const [performanceGoals, setPerformanceGoals] = useState({
+  overall_performance_goal: 85,
+  number_of_calls_average: 10
+});
 
   useEffect(() => {
     // Request member ID from parent window
@@ -487,7 +516,28 @@ useEffect(() => {
     fetchAllMetrics();
   }
 }, [memberId]);
-  
+
+useEffect(() => {
+  const fetchPerformanceGoals = async () => {
+    try {
+      console.log('Fetching performance goals for team_default');
+      const response = await fetch('/api/performance-goals?teamId=team_default');
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched performance goals:', data);
+        setPerformanceGoals(data);
+      } else {
+        console.error('Failed to fetch performance goals:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error fetching performance goals:', error);
+    }
+  };
+
+  fetchPerformanceGoals();
+}, []);
+
 useLayoutEffect(() => {
   const updateHeight = () => {
     const height = document.documentElement.scrollHeight;
@@ -534,17 +584,15 @@ return (
 
   // Determine if character should be unlocked
   let shouldBeUnlocked = false;
-  if (index === 0) {
-    // Megan is always unlocked
-    shouldBeUnlocked = true;
-  } else if (
-    prevCharacterMetrics && 
-    prevCharacterMetrics.overall_performance >= 85 &&
-    prevCharacterMetrics.total_calls >= 10
-  ) {
-    // Character should be unlocked if previous character has performance >= 85
-    shouldBeUnlocked = true;
-  }
+if (index === 0) {
+  shouldBeUnlocked = true;
+} else if (
+  prevCharacterMetrics && 
+  prevCharacterMetrics.overall_performance >= performanceGoals.overall_performance_goal &&
+  prevCharacterMetrics.total_calls >= performanceGoals.number_of_calls_average
+) {
+  shouldBeUnlocked = true;
+}
 
   // Update character's locked status
   const updatedCharacter = {
@@ -651,9 +699,10 @@ return (
           </div>
         ) : (
           <ScorePanel 
-            characterName={character.name}
-            memberId={memberId || ''}
-          />
+  characterName={character.name}
+  memberId={memberId || ''}
+  performanceGoals={performanceGoals}
+/>
         )}
       </motion.div>
     )}
@@ -662,17 +711,17 @@ return (
                 </div>
               </div>
               {updatedCharacter.locked && (
-                <LockedOverlay 
-                  previousAssistant={prevCharacter?.name || ''}
-                  isLastLocked={index === characters.length - 1}
-                  difficulty={character.difficulty}
-                />
-              )}
+  <LockedOverlay 
+    previousAssistant={prevCharacter?.name || ''}
+    isLastLocked={index === characters.length - 1}
+    difficulty={character.difficulty}
+    performanceGoals={performanceGoals}
+  />
+)}
             </div>
           );
         })}
       </div>
-      <TeamSettings />
     </div>
 );
 }
