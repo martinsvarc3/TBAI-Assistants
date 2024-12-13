@@ -223,14 +223,68 @@ function LockedOverlay({
   isLastLocked, 
   difficulty,
   performanceGoal,
-  callsAverage
+  callsAverage 
 }: { 
   previousAssistant: string; 
   isLastLocked: boolean; 
   difficulty: string;
   performanceGoal: number;
   callsAverage: number;
-})
+}) {
+  return (
+    <div 
+      className="absolute inset-0 rounded-[15px] flex items-center justify-center bg-black/40 backdrop-blur-sm" 
+      style={{ 
+        boxShadow: `0 0 20px ${
+          difficulty === 'Easy' 
+            ? 'rgba(72, 199, 174, 0.5)' 
+            : difficulty === 'Intermediate'
+              ? 'rgba(252, 161, 71, 0.5)'
+              : 'rgba(220, 38, 38, 0.5)'
+        }`
+      }}
+    >
+      <div className="w-[400px] h-[400px] p-6 pt-16 text-center flex flex-col items-center justify-start">
+        <div>
+          <div className="flex justify-center items-center gap-4 mb-8 w-full">
+            <Image
+              src={difficulty === 'Expert' 
+                ? "https://res.cloudinary.com/drkudvyog/image/upload/v1733371487/red_white_bold_syqkx8.png"
+                : difficulty === 'Intermediate'
+                  ? "https://res.cloudinary.com/drkudvyog/image/upload/v1733371487/orange_white_bold_d1mnnd.png"
+                  : "https://res.cloudinary.com/drkudvyog/image/upload/v1733371487/green_white_bold_syqkx8.png"}
+              alt="Locked"
+              width={64}
+              height={64}
+              className="object-contain"
+            />
+          </div>
+          <h3 className="text-3xl font-bold text-white mb-4">Character Locked</h3>
+          <p className="text-white text-xl mb-8">
+            {isLastLocked 
+              ? `Unlock ${previousAssistant} First` 
+              : `Achieve Overall Performance above ${performanceGoal} from the past ${callsAverage} calls on ${previousAssistant} to Unlock.`
+            }
+          </p>
+          {!isLastLocked && (
+            <div className="w-full">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-white">Overall Performance</span>
+                <span className="text-sm font-bold text-white">{performanceGoal}/100</span>
+              </div>
+              <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
+                <div 
+                  className="h-full bg-gradient-to-r from-white to-gray-200 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${performanceGoal}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
   
   const glowColor = 
     difficulty === 'Easy' 
