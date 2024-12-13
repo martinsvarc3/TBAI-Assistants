@@ -106,15 +106,6 @@ const characters: Character[] = [
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/672e571489c14976033b13e0_Obr%C3%A1zek%20WhatsApp%2C%202024-11-08%20v%2019.21.46_99e4962c-p-500.jpg",
     color: "#23c55f",
     locked: false, // Add this line
-    scores: {
-      overallPerformance: 83,
-      engagement: 80,
-      objectionHandling: 81,
-      informationGathering: 82,
-      programExplanation: 83,
-      closingSkills: 84,
-      overallEffectiveness: 85
-    }
   },
   {
     name: "David",
@@ -124,15 +115,6 @@ const characters: Character[] = [
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/6729085f757129974706314d_image%20(6)-p-500.png",
     color: "#FCA147",
     locked: true,
-    scores: {
-      overallPerformance: 88,
-      engagement: 85,
-      objectionHandling: 86,
-      informationGathering: 87,
-      programExplanation: 88,
-      closingSkills: 89,
-      overallEffectiveness: 90
-    }
   },
   {
     name: "Linda",
@@ -142,15 +124,6 @@ const characters: Character[] = [
     imageSrc: "https://cdn.prod.website-files.com/6715d8211d464cb83a0c72a1/6729085f8a8dc1e8f78eae9b_image%20(7)-p-500.png",
     color: "#DC2626",
     locked: true,
-    scores: {
-      overallPerformance: 93,
-      engagement: 90,
-      objectionHandling: 91,
-      informationGathering: 92,
-      programExplanation: 93,
-      closingSkills: 94,
-      overallEffectiveness: 95
-    }
   },
 ]
 
@@ -343,7 +316,13 @@ export default function CharacterSelection() {
     return;
   }
 
-  // Record the start of a new interaction
+  const currentMetrics = characterMetrics[character.name];
+
+  if (!currentMetrics) {
+    console.error('No metrics available for:', character.name);
+    return;
+  }
+
   try {
     const response = await fetch('/api/character-performance', {
       method: 'POST',
@@ -352,16 +331,16 @@ export default function CharacterSelection() {
       },
       body: JSON.stringify({
         memberId,
-        teamId: 'team_default', // You can modify this based on your needs
+        teamId: 'team_default',
         characterName: character.name,
         metrics: {
-          overall_performance: 85, // You'll need to replace these with actual metrics
-          engagement: 82,
-          objection_handling: 88,
-          information_gathering: 84,
-          program_explanation: 86,
-          closing_skills: 83,
-          overall_effectiveness: 85
+          overall_performance: currentMetrics.overall_performance,
+          engagement: currentMetrics.engagement,
+          objection_handling: currentMetrics.objection_handling,
+          information_gathering: currentMetrics.information_gathering,
+          program_explanation: currentMetrics.program_explanation,
+          closing_skills: currentMetrics.closing_skills,
+          overall_effectiveness: currentMetrics.overall_effectiveness
         }
       })
     });
@@ -439,7 +418,55 @@ useEffect(() => {
     fetchAllMetrics();
   }
 }, [memberId]);
-// Add after useState hooks and before return statement
+const [characterMetrics, setCharacterMetrics] = useState<{
+  [key: string]: {
+    overall_performance: number;
+    engagement: number;
+    objection_handling: number;
+    information_gathering: number;
+    program_explanation: number;
+    closing_skills: number;
+    overall_effectiveness: number;
+    total_calls: number;
+  } | null;
+}>({});
+
+const [isLoading, setIsLoading] = useState(true);
+
+useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        } else {
+          console.error(`Failed to fetch metrics for ${character.name}`);
+          metrics[character.name] = null;
+        }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+        metrics[character.name] = null;
+      }
+    }
+    
+    setCharacterMetrics(metrics);
+    setIsLoading(false);
+  };
+
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
+  
 useLayoutEffect(() => {
   const updateHeight = () => {
     const height = document.documentElement.scrollHeight;
@@ -475,9 +502,28 @@ useLayoutEffect(() => {
 return (
     <div className="w-full bg-white rounded-[20px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+
         {characters.map((character, index) => {
-          // Console log to debug current metrics
-          console.log(`Checking ${character.name}:`, characterMetrics);
+         const currentMetrics = characterMetrics[character.name];
+         const prevCharacter = index > 0 ? characters[index - 1] : null;
+         const prevCharacterMetrics = prevCharacter ? characterMetrics[prevCharacter.name] : null;
+
+         let shouldBeUnlocked = false;
+  
+         if (index === 0) {
+         shouldBeUnlocked = true;
+       } else if (
+         prevCharacterMetrics && 
+         prevCharacterMetrics.overall_performance >= 85 && 
+         prevCharacterMetrics.total_calls >= 10
+      ) {
+        shouldBeUnlocked = true;
+       }
+
+  const updatedCharacter = {
+    ...character,
+    locked: character.locked && !shouldBeUnlocked
+  };
 
           // Previous character's metrics (will be undefined for Megan)
           const prevCharacter = index > 0 ? characters[index - 1] : null;
@@ -561,38 +607,44 @@ return (
                       <ChevronUp size={20} className="inline-block ml-2" />
                     )}
                   </button>
-                  <div className="min-h-[300px] overflow-hidden relative">
-                    <AnimatePresence initial={false}>
-                      {activePanel[character.name] === 'description' ? (
-                        <motion.div
-                          key="description"
-                          initial={{ y: "100%", opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: "-100%", opacity: 0 }}
-                          transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                          className="absolute inset-0"
-                        >
-                          <p className="text-gray-600 text-base leading-relaxed text-center flex items-center justify-center h-full">
-                            {character.description}
-                          </p>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="scores"
-                          initial={{ y: "-100%", opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: "100%", opacity: 0 }}
-                          transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                          className="absolute inset-0 overflow-hidden"
-                        >
-                          <ScorePanel 
-                            characterName={character.name}
-                            memberId={memberId || ''}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+<div className="min-h-[300px] overflow-hidden relative">
+  <AnimatePresence initial={false}>
+    {activePanel[character.name] === 'description' ? (
+      <motion.div
+        key="description"
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "-100%", opacity: 0 }}
+        transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+        className="absolute inset-0"
+      >
+        <p className="text-gray-600 text-base leading-relaxed text-center flex items-center justify-center h-full">
+          {character.description}
+        </p>
+      </motion.div>
+    ) : (
+      <motion.div
+        key="scores"
+        initial={{ y: "-100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+        className="absolute inset-0 overflow-hidden"
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <p>Loading metrics...</p>
+          </div>
+        ) : (
+          <ScorePanel 
+            characterName={character.name}
+            memberId={memberId || ''}
+          />
+        )}
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
                 </div>
               </div>
               {updatedCharacter.locked && (
