@@ -229,7 +229,20 @@ function ScorePanel({
   );
 }
 
-function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previousAssistant: string; isLastLocked: boolean; difficulty: string }) {
+function LockedOverlay({ 
+  previousAssistant, 
+  isLastLocked, 
+  difficulty,
+  performanceGoals
+}: { 
+  previousAssistant: string; 
+  isLastLocked: boolean; 
+  difficulty: string;
+  performanceGoals: {
+    overall_performance_goal: number;
+    number_of_calls_average: number;
+  };
+})
   const glowColor = 
     difficulty === 'Easy' 
       ? 'rgba(72, 199, 174, 0.5)' 
@@ -276,7 +289,7 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
             <div className="w-full">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Overall Performance</span>
-                <span className="text-sm font-bold text-white">85/100</span>
+                <span className="text-sm font-bold text-white">{performanceGoals.overall_performance_goal}/100</span>
               </div>
               <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
                 <div 
@@ -693,12 +706,13 @@ if (index === 0) {
                 </div>
               </div>
               {updatedCharacter.locked && (
-                <LockedOverlay 
-                  previousAssistant={prevCharacter?.name || ''}
-                  isLastLocked={index === characters.length - 1}
-                  difficulty={character.difficulty}
-                />
-              )}
+  <LockedOverlay 
+    previousAssistant={prevCharacter?.name || ''}
+    isLastLocked={index === characters.length - 1}
+    difficulty={character.difficulty}
+    performanceGoals={performanceGoals}
+  />
+)}
             </div>
           );
         })}
