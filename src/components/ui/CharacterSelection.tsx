@@ -569,4 +569,3 @@ return (
       <TeamSettings />
     </div>
 );
-}
