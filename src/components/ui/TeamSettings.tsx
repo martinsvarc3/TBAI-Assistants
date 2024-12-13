@@ -1,6 +1,5 @@
 'use client'
 
-import TeamSettings from './TeamSettings'
 import { useState, useEffect } from 'react'
 import { Settings, Save } from 'lucide-react'
 
