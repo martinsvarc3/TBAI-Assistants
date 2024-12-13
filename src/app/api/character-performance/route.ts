@@ -1,7 +1,6 @@
 import { createPool } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 
-// Helper function for CORS headers
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': 'https://app.trainedbyai.com',
@@ -10,12 +9,10 @@ function corsHeaders() {
   };
 }
 
-// Add OPTIONS handler for CORS preflight
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
-// Type definitions
 interface PerformanceMetrics {
   overall_performance: number;
   engagement: number;
@@ -26,7 +23,6 @@ interface PerformanceMetrics {
   overall_effectiveness: number;
 }
 
-// GET endpoint
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -45,15 +41,25 @@ export async function GET(request: Request) {
       connectionString: process.env.visionboard_PRISMA_URL
     });
 
-    // If only teamId is provided, return team settings
+    // If only teamId is provided, return performance goals
     if (teamId && !memberId && !characterName) {
       const settingsResult = await pool.sql`
-        SELECT past_calls_count 
+        SELECT 
+          past_calls_count,
+          overall_performance_goal
         FROM team_settings 
         WHERE team_id = ${teamId}`;
       
-      const settings = settingsResult.rows[0] || { past_calls_count: 10 };
-      return NextResponse.json(settings, { headers: corsHeaders() });
+      const settings = settingsResult.rows[0] || { 
+        past_calls_count: 10,
+        overall_performance_goal: 85
+      };
+
+      // Return in the format expected by the frontend
+      return NextResponse.json({
+        overall_performance_goal: settings.overall_performance_goal || 85,
+        number_of_calls_average: settings.past_calls_count || 10
+      }, { headers: corsHeaders() });
     }
 
     // Get the past_calls_count setting for this team
@@ -97,7 +103,6 @@ export async function GET(request: Request) {
   }
 }
 
-// POST endpoint for recording new interactions
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -151,6 +156,14 @@ export async function POST(request: Request) {
       )
     `;
 
+    // Get the past_calls_count setting for this team
+    const settingsResult = await pool.sql`
+      SELECT past_calls_count 
+      FROM team_settings 
+      WHERE team_id = ${teamId}`;
+
+    const pastCallsCount = settingsResult.rows[0]?.past_calls_count || 10;
+
     // Return updated metrics
     const { rows } = await pool.sql`
       WITH recent_calls AS (
@@ -160,7 +173,7 @@ export async function POST(request: Request) {
           AND team_id = ${teamId}
           AND character_name = ${characterName}
         ORDER BY session_date DESC
-        LIMIT 10
+        LIMIT ${pastCallsCount}
       )
       SELECT 
         ROUND(AVG(overall_performance)) as overall_performance,
@@ -184,10 +197,10 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT endpoint for updating past_calls_count setting
+// PUT endpoint for updating team settings
 export async function PUT(request: Request) {
   try {
-    const { teamId, pastCallsCount } = await request.json();
+    const { teamId, pastCallsCount, overall_performance_goal } = await request.json();
 
     if (!teamId || !pastCallsCount) {
       return NextResponse.json(
@@ -202,11 +215,20 @@ export async function PUT(request: Request) {
 
     // Update or insert team settings
     await pool.sql`
-      INSERT INTO team_settings (team_id, past_calls_count)
-      VALUES (${teamId}, ${pastCallsCount})
+      INSERT INTO team_settings (
+        team_id, 
+        past_calls_count, 
+        overall_performance_goal
+      )
+      VALUES (
+        ${teamId}, 
+        ${pastCallsCount}, 
+        ${overall_performance_goal || 85}
+      )
       ON CONFLICT (team_id) 
       DO UPDATE SET 
         past_calls_count = ${pastCallsCount},
+        overall_performance_goal = ${overall_performance_goal || 85},
         last_updated = CURRENT_TIMESTAMP
     `;
 
