@@ -129,10 +129,12 @@ const characters: Character[] = [
 function ScorePanel({ 
   characterName, 
   memberId,
-  performanceGoals 
+  performanceGoals,
+  teamId 
 }: { 
   characterName: string; 
   memberId: string;
+  teamId: string | null;
   performanceGoals: {
     overall_performance_goal: number;
     number_of_calls_average: number;
@@ -145,8 +147,8 @@ function ScorePanel({
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-  `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${character.name}`
-);
+          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`  // Use characterName directly
+        );
         if (response.ok) {
           const data = await response.json();
           setMetrics(data);
@@ -163,7 +165,7 @@ function ScorePanel({
     if (memberId && characterName) {
       fetchMetrics();
     }
-  }, [memberId, characterName]);
+  }, [memberId, characterName, teamId]);
 
   const handleRecordsClick = (e: React.MouseEvent) => {
     e.preventDefault();
