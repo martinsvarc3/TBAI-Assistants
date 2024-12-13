@@ -218,7 +218,20 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
   );
 }
 
-function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previousAssistant: string; isLastLocked: boolean; difficulty: string }) {
+function LockedOverlay({ 
+  previousAssistant, 
+  isLastLocked, 
+  difficulty,
+  performanceGoal,
+  callsAverage
+}: { 
+  previousAssistant: string; 
+  isLastLocked: boolean; 
+  difficulty: string;
+  performanceGoal: number;
+  callsAverage: number;
+})
+  
   const glowColor = 
     difficulty === 'Easy' 
       ? 'rgba(72, 199, 174, 0.5)' 
@@ -258,7 +271,7 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
           <p className="text-white text-xl mb-8">
             {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
-              : `Achieve Overall Performance above ${performanceGoals.overall_performance_goal} from the past ${performanceGoals.number_of_calls_average} calls on ${previousAssistant} to Unlock.`
+              : `Achieve Overall Performance above ${performanceGoal} from the past ${callsAverage} calls on ${previousAssistant} to Unlock.`
             }
           </p>
           {!isLastLocked && (
@@ -573,14 +586,6 @@ return (
     ...character,
     locked: character.locked && !shouldBeUnlocked
   };
-          
-          if (index === 0) {
-            // Megan is always unlocked
-            shouldBeUnlocked = true;
-          } else if (prevCharacterMetrics && prevCharacterMetrics.overall_performance >= 85) {
-            // Character should be unlocked if previous character has performance >= 85
-            shouldBeUnlocked = true;
-          }
 
           // Debug log
           console.log(`${character.name} unlock status:`, {
@@ -685,9 +690,11 @@ return (
               </div>
               {updatedCharacter.locked && (
                 <LockedOverlay 
-                  previousAssistant={prevCharacter?.name || ''}
-                  isLastLocked={index === characters.length - 1}
-                  difficulty={character.difficulty}
+                 previousAssistant={prevCharacter?.name || ''}
+                 isLastLocked={index === characters.length - 1}
+                 difficulty={character.difficulty}
+                 performanceGoal={performanceGoals.overall_performance_goal}
+                 callsAverage={performanceGoals.number_of_calls_average}
                 />
               )}
             </div>
