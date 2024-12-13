@@ -520,10 +520,15 @@ useEffect(() => {
 useEffect(() => {
   const fetchPerformanceGoals = async () => {
     try {
+      console.log('Fetching performance goals for team_default');
       const response = await fetch('/api/performance-goals?teamId=team_default');
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched performance goals:', data);
         setPerformanceGoals(data);
+      } else {
+        console.error('Failed to fetch performance goals:', await response.text());
       }
     } catch (error) {
       console.error('Error fetching performance goals:', error);
@@ -532,7 +537,7 @@ useEffect(() => {
 
   fetchPerformanceGoals();
 }, []);
-  
+
 useLayoutEffect(() => {
   const updateHeight = () => {
     const height = document.documentElement.scrollHeight;
