@@ -73,13 +73,50 @@ export default function TeamSettings() {
     );
   }
 
-return (
-    <div className="w-full bg-white rounded-[20px]">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
-        {characters.map((character, index) => (
-          // ... your existing character cards code
-        ))}
+  return (
+    <div className="fixed bottom-4 right-4 bg-white p-6 rounded-lg shadow-xl w-80">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Team Settings</h3>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
       </div>
-      <TeamSettings />  {/* Add this line here */}
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Number of past calls to consider
+        </label>
+        <input
+          type="number"
+          min="1"
+          max="100"
+          value={settings.past_calls_count}
+          onChange={(e) => setSettings({
+            ...settings,
+            past_calls_count: parseInt(e.target.value) || 10
+          })}
+          className="w-full p-2 border rounded-md"
+        />
+      </div>
+
+      <div className="flex justify-end items-center gap-4">
+        {message && (
+          <span className={`text-sm ${message.includes('Error') || message.includes('Failed') ? 'text-red-500' : 'text-green-500'}`}>
+            {message}
+          </span>
+        )}
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+        >
+          <Save className="w-4 h-4" />
+          {isSaving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
     </div>
-);
+  );
+}
