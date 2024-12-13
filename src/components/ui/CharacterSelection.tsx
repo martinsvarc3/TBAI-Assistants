@@ -242,7 +242,7 @@ function LockedOverlay({
     overall_performance_goal: number;
     number_of_calls_average: number;
   };
-})
+}) {
   const glowColor = 
     difficulty === 'Easy' 
       ? 'rgba(72, 199, 174, 0.5)' 
@@ -280,7 +280,7 @@ function LockedOverlay({
           </div>
           <h3 className="text-3xl font-bold text-white mb-4">Character Locked</h3>
           <p className="text-white text-xl mb-8">
-           {isLastLocked 
+            {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
               : `Achieve Overall Performance above ${performanceGoals.overall_performance_goal} from the past ${performanceGoals.number_of_calls_average} calls on ${previousAssistant} to Unlock.`
             }
@@ -302,7 +302,7 @@ function LockedOverlay({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 
