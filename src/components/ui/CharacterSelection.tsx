@@ -383,7 +383,7 @@ const [performanceGoals, setPerformanceGoals] = useState({
   },
   body: JSON.stringify({
     memberId,
-    teamId: 'teamId',  // This needs to be changed
+    teamId: teamId || 'team_default' // This needs to be changed
     characterName: character.name,
     metrics: {
           overall_performance: currentMetrics.overall_performance,
