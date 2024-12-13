@@ -470,24 +470,34 @@ useEffect(() => {
 
 useEffect(() => {
   const fetchAllMetrics = async () => {
-    if (!memberId || !teamId) return;
+    if (!memberId || !teamId) {
+      console.log('Missing memberId or teamId:', { memberId, teamId });
+      return;
+    }
     
     setIsLoading(true);
+    console.log('Starting to fetch metrics with:', { memberId, teamId });
+    
     const metrics: typeof characterMetrics = {};
     
     for (const character of characters) {
       try {
-        console.log(`Fetching metrics for ${character.name}`);
-        const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`
-        );
+        const url = `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`;
+        console.log('Fetching URL:', url);
+        
+        const response = await fetch(url);
+        console.log(`Response for ${character.name}:`, { 
+          status: response.status,
+          ok: response.ok 
+        });
         
         if (response.ok) {
           const data = await response.json();
-          console.log(`Received metrics for ${character.name}:`, data);
+          console.log(`Data for ${character.name}:`, data);
           metrics[character.name] = data;
         } else {
-          console.error(`Failed to fetch metrics for ${character.name}:`, await response.text());
+          const errorText = await response.text();
+          console.error(`Failed to fetch metrics for ${character.name}:`, errorText);
           metrics[character.name] = null;
         }
       } catch (error) {
@@ -496,13 +506,13 @@ useEffect(() => {
       }
     }
     
-    console.log('Setting all metrics:', metrics);
+    console.log('Final metrics to be set:', metrics);
     setCharacterMetrics(metrics);
     setIsLoading(false);
   };
 
   fetchAllMetrics();
-}, [memberId, teamId]); 
+}, [memberId, teamId]);
 
 useLayoutEffect(() => {
   const updateHeight = () => {
