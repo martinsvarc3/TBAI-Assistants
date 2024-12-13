@@ -605,25 +605,26 @@ if (index === 0) {
       </motion.div>
     ) : (
       <motion.div
-        key="scores"
-        initial={{ y: "-100%", opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: "100%", opacity: 0 }}
-        transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-        className="absolute inset-0 overflow-hidden"
-      >
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <p>Loading metrics...</p>
-          </div>
-        ) : (
-          <ScorePanel 
-  characterName={character.name}
-  memberId={memberId || ''}
-  performanceGoals={performanceGoals}
-/>
-        )}
-      </motion.div>
+  key="scores"
+  initial={{ y: "-100%", opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  exit={{ y: "100%", opacity: 0 }}
+  transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+  className="absolute inset-0 overflow-hidden"
+>
+  {isLoading ? (
+    <div className="flex items-center justify-center h-full">
+      <p>Loading metrics...</p>
+    </div>
+  ) : (
+    <ScorePanel 
+      characterName={character.name}
+      memberId={memberId || ''}
+      teamId={teamId}
+      performanceGoals={performanceGoals}
+    />
+  )}
+</motion.div>
     )}
   </AnimatePresence>
 </div>
