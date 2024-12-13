@@ -284,13 +284,27 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
 
 
 export default function CharacterSelection() {
-  const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
-    Megan: 'description',
-    David: 'description',
-    Linda: 'description'
-  });
+const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
+  Megan: 'description',
+  David: 'description',
+  Linda: 'description'
+});
 
-  const [memberId, setMemberId] = useState<string | null>(null);
+const [memberId, setMemberId] = useState<string | null>(null);
+const [isLoading, setIsLoading] = useState(true);
+
+const [characterMetrics, setCharacterMetrics] = useState<{
+  [key: string]: {
+    overall_performance: number;
+    engagement: number;
+    objection_handling: number;
+    information_gathering: number;
+    program_explanation: number;
+    closing_skills: number;
+    overall_effectiveness: number;
+    total_calls: number;
+  } | null;
+}>({});
 
   useEffect(() => {
     // Request member ID from parent window
@@ -307,7 +321,39 @@ export default function CharacterSelection() {
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+ useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        } else {
+          console.error(`Failed to fetch metrics for ${character.name}`);
+          metrics[character.name] = null;
+        }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+        metrics[character.name] = null;
+      }
+    }
+    
+    setCharacterMetrics(metrics);
+    setIsLoading(false);
+  };
 
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
   const handleStart = async (character: Character) => {
   console.log('Start button clicked for:', character.name);
 
@@ -503,10 +549,33 @@ return (
     <div className="w-full bg-white rounded-[20px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
 
-        {characters.map((character, index) => {
-         const currentMetrics = characterMetrics[character.name];
-         const prevCharacter = index > 0 ? characters[index - 1] : null;
-         const prevCharacterMetrics = prevCharacter ? characterMetrics[prevCharacter.name] : null;
+{characters.map((character, index) => {
+  // Get current character metrics
+  const currentMetrics = characterMetrics[character.name];
+  
+  // Get previous character and their metrics
+  const prevCharacter = index > 0 ? characters[index - 1] : null;
+  const prevCharacterMetrics = prevCharacter ? characterMetrics[prevCharacter.name] : null;
+
+  // Determine if character should be unlocked
+  let shouldBeUnlocked = false;
+  if (index === 0) {
+    // Megan is always unlocked
+    shouldBeUnlocked = true;
+  } else if (
+    prevCharacterMetrics && 
+    prevCharacterMetrics.overall_performance >= 85 &&
+    prevCharacterMetrics.total_calls >= 10
+  ) {
+    // Character should be unlocked if previous character has performance >= 85
+    shouldBeUnlocked = true;
+  }
+
+  // Update character's locked status
+  const updatedCharacter = {
+    ...character,
+    locked: character.locked && !shouldBeUnlocked
+  };
 
          let shouldBeUnlocked = false;
   
