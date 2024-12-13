@@ -218,19 +218,14 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
   );
 }
 
-function LockedOverlay({ 
-  previousAssistant, 
-  isLastLocked, 
-  difficulty,
-  performanceGoal,
-  callsAverage 
-}: { 
-  previousAssistant: string; 
-  isLastLocked: boolean; 
-  difficulty: string;
-  performanceGoal: number;
-  callsAverage: number;
-}) {
+function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previousAssistant: string; isLastLocked: boolean; difficulty: string }) {
+  const glowColor = 
+    difficulty === 'Easy' 
+      ? 'rgba(72, 199, 174, 0.5)' 
+      : difficulty === 'Intermediate'
+        ? 'rgba(252, 161, 71, 0.5)'
+        : 'rgba(220, 38, 38, 0.5)';
+
   return (
     <div 
       className="absolute inset-0 rounded-[15px] flex items-center justify-center bg-black/40 backdrop-blur-sm" 
@@ -263,19 +258,19 @@ function LockedOverlay({
           <p className="text-white text-xl mb-8">
             {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
-              : `Achieve Overall Performance above ${performanceGoal} from the past ${callsAverage} calls on ${previousAssistant} to Unlock.`
+              : `Achieve Overall Performance above 85 from the past 10 calls on ${previousAssistant} to Unlock.`
             }
           </p>
           {!isLastLocked && (
             <div className="w-full">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Overall Performance</span>
-                <span className="text-sm font-bold text-white">{performanceGoal}/100</span>
+                <span className="text-sm font-bold text-white">85/100</span>
               </div>
               <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
                 <div 
                   className="h-full bg-gradient-to-r from-white to-gray-200 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${performanceGoal}%` }}
+                  style={{ width: '85%' }}
                 />
               </div>
             </div>
@@ -283,9 +278,10 @@ function LockedOverlay({
         </div>
       </div>
     </div>
-  );
+  )
 }
-  
+
+
 export default function CharacterSelection() {
 const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
   Megan: 'description',
@@ -295,11 +291,6 @@ const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 
 
 const [memberId, setMemberId] = useState<string | null>(null);
 const [isLoading, setIsLoading] = useState(true);
-
-const [performanceGoals, setPerformanceGoals] = useState({
-  overall_performance_goal: 85, // Default value
-  number_of_calls_average: 10   // Default value
-});
 
 const [characterMetrics, setCharacterMetrics] = useState<{
   [key: string]: {
@@ -315,39 +306,54 @@ const [characterMetrics, setCharacterMetrics] = useState<{
   } | null;
 }>({});
 
-useEffect(() => {
-  // Request member ID from parent window
-  window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
+  useEffect(() => {
+    // Request member ID from parent window
+    window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
 
-  // Listen for member ID from parent
-  const handleMessage = async (event: MessageEvent) => {
-    if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
-      console.log('Received member ID:', event.data.memberId);
-      setMemberId(event.data.memberId);
-      
-      // Get teamId from URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const teamId = urlParams.get('teamId');
-      
-      if (teamId) {
-        try {
-          const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Initial performance goals:', data);
-            setPerformanceGoals(data);
-          }
-        } catch (error) {
-          console.error('Error fetching performance goals:', error);
+    // Listen for member ID from parent
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
+        console.log('Received member ID:', event.data.memberId);
+        setMemberId(event.data.memberId);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+ useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        } else {
+          console.error(`Failed to fetch metrics for ${character.name}`);
+          metrics[character.name] = null;
         }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+        metrics[character.name] = null;
       }
     }
+    
+    setCharacterMetrics(metrics);
+    setIsLoading(false);
   };
 
-  window.addEventListener('message', handleMessage);
-  return () => window.removeEventListener('message', handleMessage);
-}, []);
-  
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
   const handleStart = async (character: Character) => {
   console.log('Start button clicked for:', character.name);
 
@@ -449,46 +455,37 @@ useEffect(() => {
 }, [memberId]);
 
 useEffect(() => {
-  // Set up polling for updates
-  const pollInterval = setInterval(async () => {
-    if (memberId) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const teamId = urlParams.get('teamId');
-      
-      // Poll performance goals
-      if (teamId) {
-        try {
-          const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Polled performance goals:', data);
-            setPerformanceGoals(data);
-          }
-        } catch (error) {
-          console.error('Error polling performance goals:', error);
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        } else {
+          console.error(`Failed to fetch metrics for ${character.name}`);
+          metrics[character.name] = null;
         }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+        metrics[character.name] = null;
       }
-
-      // Poll metrics
-      const metrics: typeof characterMetrics = {};
-      for (const character of characters) {
-        try {
-          const response = await fetch(
-            `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            metrics[character.name] = data;
-          }
-        } catch (error) {
-          console.error(`Error polling metrics for ${character.name}:`, error);
-        }
-      }
-      setCharacterMetrics(metrics);
     }
-  }, 5000); // Poll every 5 seconds
+    
+    setCharacterMetrics(metrics);
+    setIsLoading(false);
+  };
 
-  return () => clearInterval(pollInterval);
+  if (memberId) {
+    fetchAllMetrics();
+  }
 }, [memberId]);
   
 useLayoutEffect(() => {
@@ -542,8 +539,8 @@ return (
     shouldBeUnlocked = true;
   } else if (
     prevCharacterMetrics && 
-    prevCharacterMetrics.overall_performance >= performanceGoals.overall_performance_goal &&
-    prevCharacterMetrics.total_calls >= performanceGoals.number_of_calls_average
+    prevCharacterMetrics.overall_performance >= 85 &&
+    prevCharacterMetrics.total_calls >= 10
   ) {
     // Character should be unlocked if previous character has performance >= 85
     shouldBeUnlocked = true;
@@ -554,6 +551,14 @@ return (
     ...character,
     locked: character.locked && !shouldBeUnlocked
   };
+          
+          if (index === 0) {
+            // Megan is always unlocked
+            shouldBeUnlocked = true;
+          } else if (prevCharacterMetrics && prevCharacterMetrics.overall_performance >= 85) {
+            // Character should be unlocked if previous character has performance >= 85
+            shouldBeUnlocked = true;
+          }
 
           // Debug log
           console.log(`${character.name} unlock status:`, {
@@ -658,11 +663,9 @@ return (
               </div>
               {updatedCharacter.locked && (
                 <LockedOverlay 
-                 previousAssistant={prevCharacter?.name || ''}
-                 isLastLocked={index === characters.length - 1}
-                 difficulty={character.difficulty}
-                 performanceGoal={performanceGoals.overall_performance_goal}
-                 callsAverage={performanceGoals.number_of_calls_average}
+                  previousAssistant={prevCharacter?.name || ''}
+                  isLastLocked={index === characters.length - 1}
+                  difficulty={character.difficulty}
                 />
               )}
             </div>
