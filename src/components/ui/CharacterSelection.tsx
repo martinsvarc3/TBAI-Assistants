@@ -359,40 +359,7 @@ const [performanceGoals, setPerformanceGoals] = useState({
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
- useEffect(() => {
-  useEffect(() => {
-  const fetchAllMetrics = async () => {
-    if (!memberId || !teamId) return;
-    
-    const metrics: typeof characterMetrics = {};
-    
-    for (const character of characters) {  // Now we have access to character object
-      try {
-        const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`  // Use character.name here
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          metrics[character.name] = data;
-        } else {
-          console.error(`Failed to fetch metrics for ${character.name}`);
-          metrics[character.name] = null;
-        }
-      } catch (error) {
-        console.error(`Error fetching metrics for ${character.name}:`, error);
-        metrics[character.name] = null;
-      }
-    }
-    
-    setCharacterMetrics(metrics);
-    setIsLoading(false);
-  };
 
-  if (memberId) {
-    fetchAllMetrics();
-  }
-}, [memberId, teamId]);  // Add teamId to dependencies
   const handleStart = async (character: Character) => {
   console.log('Start button clicked for:', character.name);
 
@@ -463,69 +430,6 @@ const [performanceGoals, setPerformanceGoals] = useState({
       [name]: prev[name] === 'description' ? 'scores' : 'description'
     }));
   };
-
-// Fetch metrics for all characters when component mounts
-useEffect(() => {
-  const fetchAllMetrics = async () => {
-    if (!memberId) return;
-    
-    const metrics: typeof characterMetrics = {};
-    
-    for (const character of characters) {
-      try {
-        const response = await fetch(
-  `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${character.name}`
-);
-        if (response.ok) {
-          const data = await response.json();
-          metrics[character.name] = data;
-        }
-      } catch (error) {
-        console.error(`Error fetching metrics for ${character.name}:`, error);
-      }
-    }
-    
-    setCharacterMetrics(metrics);
-  };
-
-  if (memberId) {
-    fetchAllMetrics();
-  }
-}, [memberId]);
-
-useEffect(() => {
-  const fetchAllMetrics = async () => {
-    if (!memberId) return;
-    
-    const metrics: typeof characterMetrics = {};
-    
-    for (const character of characters) {
-      try {
-        const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=teamId&characterName=${character.name}`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          metrics[character.name] = data;
-        } else {
-          console.error(`Failed to fetch metrics for ${character.name}`);
-          metrics[character.name] = null;
-        }
-      } catch (error) {
-        console.error(`Error fetching metrics for ${character.name}:`, error);
-        metrics[character.name] = null;
-      }
-    }
-    
-    setCharacterMetrics(metrics);
-    setIsLoading(false);
-  };
-
-  if (memberId) {
-    fetchAllMetrics();
-  }
-}, [memberId]);
 
 useEffect(() => {
   const fetchPerformanceGoals = async () => {
