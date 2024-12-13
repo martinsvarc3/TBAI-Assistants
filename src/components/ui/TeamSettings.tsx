@@ -10,7 +10,7 @@ interface TeamSettings {
 export default function TeamSettings() {
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<TeamSettings>({
-    past_calls_count: 6
+    past_calls_count: 10
   });
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
