@@ -147,7 +147,7 @@ function ScorePanel({
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`
+          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`  // Use characterName directly
         );
         if (response.ok) {
           const data = await response.json();
@@ -383,7 +383,7 @@ const [performanceGoals, setPerformanceGoals] = useState({
   },
   body: JSON.stringify({
     memberId,
-    teamId: teamId,  // This needs to be changed
+    teamId: 'teamId',  // This needs to be changed
     characterName: character.name,
     metrics: {
           overall_performance: currentMetrics.overall_performance,
