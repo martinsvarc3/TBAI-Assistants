@@ -144,23 +144,34 @@ function ScorePanel({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const response = await fetch(
-          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`  // Use characterName directly
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setMetrics(data);
-        } else {
-          console.error('Failed to fetch metrics');
-        }
-      } catch (error) {
-        console.error('Error fetching metrics:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Modify the fetchMetrics function in ScorePanel:
+const fetchMetrics = async () => {
+  try {
+    console.log(`Fetching metrics for ${characterName} with teamId ${teamId}`);
+    const response = await fetch(
+      `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`
+    );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to fetch metrics:', errorText);
+      throw new Error(errorText);
+    }
+    
+    const data = await response.json();
+    console.log('Received metrics:', data);
+    
+    if (!data) {
+      throw new Error('No data received');
+    }
+    
+    setMetrics(data);
+  } catch (error) {
+    console.error('Error fetching metrics:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
     if (memberId && characterName) {
       fetchMetrics();
@@ -383,8 +394,8 @@ const [performanceGoals, setPerformanceGoals] = useState({
   },
   body: JSON.stringify({
     memberId,
-    teamId: teamId || 'team_default' // This needs to be changed
-    characterName: character.name,
+    teamId: teamId || 'team_default'
+    characterName: character.name,  
     metrics: {
           overall_performance: currentMetrics.overall_performance,
           engagement: currentMetrics.engagement,
@@ -456,6 +467,42 @@ useEffect(() => {
 
   fetchPerformanceGoals();
 }, []);
+
+useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId || !teamId) return;
+    
+    setIsLoading(true);
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        console.log(`Fetching metrics for ${character.name}`);
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`Received metrics for ${character.name}:`, data);
+          metrics[character.name] = data;
+        } else {
+          console.error(`Failed to fetch metrics for ${character.name}:`, await response.text());
+          metrics[character.name] = null;
+        }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+        metrics[character.name] = null;
+      }
+    }
+    
+    console.log('Setting all metrics:', metrics);
+    setCharacterMetrics(metrics);
+    setIsLoading(false);
+  };
+
+  fetchAllMetrics();
+}, [memberId, teamId]); 
 
 useLayoutEffect(() => {
   const updateHeight = () => {
