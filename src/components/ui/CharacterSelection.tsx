@@ -424,17 +424,6 @@ const [characterMetrics, setCharacterMetrics] = useState<{
       [name]: prev[name] === 'description' ? 'scores' : 'description'
     }));
   };
-  const [characterMetrics, setCharacterMetrics] = useState<{
-  [key: string]: {
-    overall_performance: number;
-    engagement: number;
-    objection_handling: number;
-    information_gathering: number;
-    program_explanation: number;
-    closing_skills: number;
-    overall_effectiveness: number;
-  };
-}>({});
 
 // Fetch metrics for all characters when component mounts
 useEffect(() => {
@@ -464,20 +453,6 @@ useEffect(() => {
     fetchAllMetrics();
   }
 }, [memberId]);
-const [characterMetrics, setCharacterMetrics] = useState<{
-  [key: string]: {
-    overall_performance: number;
-    engagement: number;
-    objection_handling: number;
-    information_gathering: number;
-    program_explanation: number;
-    closing_skills: number;
-    overall_effectiveness: number;
-    total_calls: number;
-  } | null;
-}>({});
-
-const [isLoading, setIsLoading] = useState(true);
 
 useEffect(() => {
   const fetchAllMetrics = async () => {
@@ -576,30 +551,6 @@ return (
     ...character,
     locked: character.locked && !shouldBeUnlocked
   };
-
-         let shouldBeUnlocked = false;
-  
-         if (index === 0) {
-         shouldBeUnlocked = true;
-       } else if (
-         prevCharacterMetrics && 
-         prevCharacterMetrics.overall_performance >= 85 && 
-         prevCharacterMetrics.total_calls >= 10
-      ) {
-        shouldBeUnlocked = true;
-       }
-
-  const updatedCharacter = {
-    ...character,
-    locked: character.locked && !shouldBeUnlocked
-  };
-
-          // Previous character's metrics (will be undefined for Megan)
-          const prevCharacter = index > 0 ? characters[index - 1] : null;
-          const prevCharacterMetrics = prevCharacter ? characterMetrics[prevCharacter.name] : null;
-
-          // Determine if this character should be unlocked
-          let shouldBeUnlocked = false;
           
           if (index === 0) {
             // Megan is always unlocked
@@ -608,12 +559,6 @@ return (
             // Character should be unlocked if previous character has performance >= 85
             shouldBeUnlocked = true;
           }
-
-          // Update the character's locked status
-          const updatedCharacter = {
-            ...character,
-            locked: character.locked && !shouldBeUnlocked
-          };
 
           // Debug log
           console.log(`${character.name} unlock status:`, {
