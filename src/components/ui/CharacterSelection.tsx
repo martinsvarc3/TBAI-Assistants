@@ -394,8 +394,8 @@ const [performanceGoals, setPerformanceGoals] = useState({
   },
   body: JSON.stringify({
     memberId,
-    teamId: teamId || 'team_default'
-    characterName: character.name,  
+    teamId: teamId || 'team_default', 
+    characterName: character.name,
     metrics: {
           overall_performance: currentMetrics.overall_performance,
           engagement: currentMetrics.engagement,
