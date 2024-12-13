@@ -11,23 +11,30 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const teamId = searchParams.get('teamId');
   
+  console.log('Received request for team ID:', teamId);
+  
   if (!teamId) {
     return NextResponse.json({ error: 'Team ID required' }, { status: 400 });
   }
 
   try {
     const client = await getDbClient();
+    console.log('Connected to database');
+    
     const { rows } = await client.query(
       'SELECT overall_performance_goal, number_of_calls_average, team_id, created_at FROM performance_goals WHERE team_id = $1 ORDER BY created_at DESC LIMIT 1',
       [teamId]
     );
+    
+    console.log('Query result:', rows);
+    
     await client.end();
 
     if (rows.length === 0) {
-      // Return default values if no settings found
+      console.log('No performance goals found, returning defaults');
       return NextResponse.json({
-        overall_performance_goal: 85, // Default performance goal
-        number_of_calls_average: 10, // Default number of calls
+        overall_performance_goal: 85,
+        number_of_calls_average: 10,
         team_id: teamId,
         created_at: new Date().toISOString()
       });
