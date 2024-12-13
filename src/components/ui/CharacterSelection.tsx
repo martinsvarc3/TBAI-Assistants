@@ -360,16 +360,17 @@ const [performanceGoals, setPerformanceGoals] = useState({
     return () => window.removeEventListener('message', handleMessage);
   }, []);
  useEffect(() => {
+  useEffect(() => {
   const fetchAllMetrics = async () => {
-    if (!memberId) return;
+    if (!memberId || !teamId) return;
     
     const metrics: typeof characterMetrics = {};
     
-    for (const character of characters) {
+    for (const character of characters) {  // Now we have access to character object
       try {
         const response = await fetch(
-  `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`
-);
+          `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`  // Use character.name here
+        );
         
         if (response.ok) {
           const data = await response.json();
@@ -391,7 +392,7 @@ const [performanceGoals, setPerformanceGoals] = useState({
   if (memberId) {
     fetchAllMetrics();
   }
-}, [memberId]);
+}, [memberId, teamId]);  // Add teamId to dependencies
   const handleStart = async (character: Character) => {
   console.log('Start button clicked for:', character.name);
 
