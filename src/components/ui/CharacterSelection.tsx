@@ -186,7 +186,7 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
       <div className="w-full text-sm h-[320px] flex flex-col">
         <div className="flex-grow overflow-y-auto scrollbar-thin">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">
-            Score based on past {metrics.total_calls} calls
+          Score based on past {performanceGoals.number_of_calls_average} calls
           </h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
@@ -256,9 +256,9 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
           </div>
           <h3 className="text-3xl font-bold text-white mb-4">Character Locked</h3>
           <p className="text-white text-xl mb-8">
-            {isLastLocked 
+           {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
-              : `Achieve Overall Performance above 85 from the past 10 calls on ${previousAssistant} to Unlock.`
+              : `Achieve Overall Performance above ${performanceGoals.overall_performance_goal} from the past ${performanceGoals.number_of_calls_average} calls on ${previousAssistant} to Unlock.`
             }
           </p>
           {!isLastLocked && (
@@ -270,7 +270,7 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
               <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
                 <div 
                   className="h-full bg-gradient-to-r from-white to-gray-200 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: '85%' }}
+                  style={{ width: `${performanceGoals.overall_performance_goal}%` }}
                 />
               </div>
             </div>
@@ -305,6 +305,11 @@ const [characterMetrics, setCharacterMetrics] = useState<{
     past_calls_count: number; // Added this line
   } | null;
 }>({});
+
+const [performanceGoals, setPerformanceGoals] = useState({
+  overall_performance_goal: 85,
+  number_of_calls_average: 10
+});
 
   useEffect(() => {
     // Request member ID from parent window
@@ -487,6 +492,22 @@ useEffect(() => {
     fetchAllMetrics();
   }
 }, [memberId]);
+
+useEffect(() => {
+  const fetchPerformanceGoals = async () => {
+    try {
+      const response = await fetch('/api/performance-goals?teamId=team_default');
+      if (response.ok) {
+        const data = await response.json();
+        setPerformanceGoals(data);
+      }
+    } catch (error) {
+      console.error('Error fetching performance goals:', error);
+    }
+  };
+
+  fetchPerformanceGoals();
+}, []);
   
 useLayoutEffect(() => {
   const updateHeight = () => {
@@ -534,17 +555,15 @@ return (
 
   // Determine if character should be unlocked
   let shouldBeUnlocked = false;
-  if (index === 0) {
-    // Megan is always unlocked
-    shouldBeUnlocked = true;
-  } else if (
-    prevCharacterMetrics && 
-    prevCharacterMetrics.overall_performance >= 85 &&
-    prevCharacterMetrics.total_calls >= 10
-  ) {
-    // Character should be unlocked if previous character has performance >= 85
-    shouldBeUnlocked = true;
-  }
+if (index === 0) {
+  shouldBeUnlocked = true;
+} else if (
+  prevCharacterMetrics && 
+  prevCharacterMetrics.overall_performance >= performanceGoals.overall_performance_goal &&
+  prevCharacterMetrics.total_calls >= performanceGoals.number_of_calls_average
+) {
+  shouldBeUnlocked = true;
+}
 
   // Update character's locked status
   const updatedCharacter = {
