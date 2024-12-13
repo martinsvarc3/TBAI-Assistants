@@ -126,57 +126,33 @@ const characters: Character[] = [
   },
 ]
 
-function ScorePanel({ 
-  characterName, 
-  memberId,
-  performanceGoals,
-  teamId 
-}: { 
-  characterName: string; 
-  memberId: string;
-  teamId: string | null;
-  performanceGoals: {
-    overall_performance_goal: number;
-    number_of_calls_average: number;
-  }; 
-}) {
+function ScorePanel({ characterName, memberId }: { characterName: string; memberId: string }) {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Modify the fetchMetrics function in ScorePanel:
-const fetchMetrics = async () => {
-  try {
-    console.log(`Fetching metrics for ${characterName} with teamId ${teamId}`);
-    const response = await fetch(
-      `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${characterName}`
-    );
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to fetch metrics:', errorText);
-      throw new Error(errorText);
-    }
-    
-    const data = await response.json();
-    console.log('Received metrics:', data);
-    
-    if (!data) {
-      throw new Error('No data received');
-    }
-    
-    setMetrics(data);
-  } catch (error) {
-    console.error('Error fetching metrics:', error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${characterName}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setMetrics(data);
+        } else {
+          console.error('Failed to fetch metrics');
+        }
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     if (memberId && characterName) {
       fetchMetrics();
     }
-  }, [memberId, characterName, teamId]);
+  }, [memberId, characterName]);
 
   const handleRecordsClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -210,8 +186,8 @@ const fetchMetrics = async () => {
       <div className="w-full text-sm h-[320px] flex flex-col">
         <div className="flex-grow overflow-y-auto scrollbar-thin">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">
-            Score based on past {performanceGoals.number_of_calls_average} calls
-            </h3>
+            Score based on past {metrics.total_calls} calls
+          </h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
               <div className="flex justify-between items-center mb-1">
@@ -242,20 +218,7 @@ const fetchMetrics = async () => {
   );
 }
 
-function LockedOverlay({ 
-  previousAssistant, 
-  isLastLocked, 
-  difficulty,
-  performanceGoals
-}: { 
-  previousAssistant: string; 
-  isLastLocked: boolean; 
-  difficulty: string;
-  performanceGoals: {
-    overall_performance_goal: number;
-    number_of_calls_average: number;
-  };
-}) {
+function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previousAssistant: string; isLastLocked: boolean; difficulty: string }) {
   const glowColor = 
     difficulty === 'Easy' 
       ? 'rgba(72, 199, 174, 0.5)' 
@@ -295,19 +258,19 @@ function LockedOverlay({
           <p className="text-white text-xl mb-8">
             {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
-              : `Achieve Overall Performance above ${performanceGoals.overall_performance_goal} from the past ${performanceGoals.number_of_calls_average} calls on ${previousAssistant} to Unlock.`
+              : `Achieve Overall Performance above 85 from the past 10 calls on ${previousAssistant} to Unlock.`
             }
           </p>
           {!isLastLocked && (
             <div className="w-full">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Overall Performance</span>
-                <span className="text-sm font-bold text-white">{performanceGoals.overall_performance_goal}/100</span>
+                <span className="text-sm font-bold text-white">85/100</span>
               </div>
               <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
                 <div 
                   className="h-full bg-gradient-to-r from-white to-gray-200 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${performanceGoals.overall_performance_goal}%` }}
+                  style={{ width: '85%' }}
                 />
               </div>
             </div>
@@ -315,12 +278,11 @@ function LockedOverlay({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 
 export default function CharacterSelection() {
-  const [teamId, setTeamId] = useState<string | null>(null);
 const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 'scores' }>({
   Megan: 'description',
   David: 'description',
@@ -329,12 +291,6 @@ const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 
 
 const [memberId, setMemberId] = useState<string | null>(null);
 const [isLoading, setIsLoading] = useState(true);
-
-useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tid = urlParams.get('teamId');
-    setTeamId(tid);
-  }, []);
 
 const [characterMetrics, setCharacterMetrics] = useState<{
   [key: string]: {
@@ -349,11 +305,6 @@ const [characterMetrics, setCharacterMetrics] = useState<{
     past_calls_count: number; // Added this line
   } | null;
 }>({});
-
-const [performanceGoals, setPerformanceGoals] = useState({
-  overall_performance_goal: 85,
-  number_of_calls_average: 10
-});
 
   useEffect(() => {
     // Request member ID from parent window
@@ -370,7 +321,39 @@ const [performanceGoals, setPerformanceGoals] = useState({
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+ useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        } else {
+          console.error(`Failed to fetch metrics for ${character.name}`);
+          metrics[character.name] = null;
+        }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+        metrics[character.name] = null;
+      }
+    }
+    
+    setCharacterMetrics(metrics);
+    setIsLoading(false);
+  };
 
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
   const handleStart = async (character: Character) => {
   console.log('Start button clicked for:', character.name);
 
@@ -388,15 +371,15 @@ const [performanceGoals, setPerformanceGoals] = useState({
 
   try {
     const response = await fetch('/api/character-performance', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    memberId,
-    teamId: teamId || 'team_default', 
-    characterName: character.name,
-    metrics: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        memberId,
+        teamId: 'team_default',
+        characterName: character.name,
+        metrics: {
           overall_performance: currentMetrics.overall_performance,
           engagement: currentMetrics.engagement,
           objection_handling: currentMetrics.objection_handling,
@@ -442,62 +425,52 @@ const [performanceGoals, setPerformanceGoals] = useState({
     }));
   };
 
-useEffect(() => {
-  const fetchPerformanceGoals = async () => {
-    try {
-      // Get teamId from URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const teamId = urlParams.get('teamId');
-
-      console.log('Fetching performance goals for teamId:', teamId);
-      const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
-      console.log('Response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched performance goals:', data);
-        setPerformanceGoals(data);
-      } else {
-        console.error('Failed to fetch performance goals:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error fetching performance goals:', error);
-    }
-  };
-
-  fetchPerformanceGoals();
-}, []);
-
+// Fetch metrics for all characters when component mounts
 useEffect(() => {
   const fetchAllMetrics = async () => {
-    if (!memberId || !teamId) {
-      console.log('Missing memberId or teamId:', { memberId, teamId });
-      return;
-    }
-    
-    setIsLoading(true);
-    console.log('Starting to fetch metrics with:', { memberId, teamId });
+    if (!memberId) return;
     
     const metrics: typeof characterMetrics = {};
     
     for (const character of characters) {
       try {
-        const url = `/api/character-performance?memberId=${memberId}&teamId=${teamId}&characterName=${character.name}`;
-        console.log('Fetching URL:', url);
-        
-        const response = await fetch(url);
-        console.log(`Response for ${character.name}:`, { 
-          status: response.status,
-          ok: response.ok 
-        });
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+      }
+    }
+    
+    setCharacterMetrics(metrics);
+  };
+
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
+
+useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
         
         if (response.ok) {
           const data = await response.json();
-          console.log(`Data for ${character.name}:`, data);
           metrics[character.name] = data;
         } else {
-          const errorText = await response.text();
-          console.error(`Failed to fetch metrics for ${character.name}:`, errorText);
+          console.error(`Failed to fetch metrics for ${character.name}`);
           metrics[character.name] = null;
         }
       } catch (error) {
@@ -506,14 +479,15 @@ useEffect(() => {
       }
     }
     
-    console.log('Final metrics to be set:', metrics);
     setCharacterMetrics(metrics);
     setIsLoading(false);
   };
 
-  fetchAllMetrics();
-}, [memberId, teamId]);
-
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
+  
 useLayoutEffect(() => {
   const updateHeight = () => {
     const height = document.documentElement.scrollHeight;
@@ -560,15 +534,17 @@ return (
 
   // Determine if character should be unlocked
   let shouldBeUnlocked = false;
-if (index === 0) {
-  shouldBeUnlocked = true;
-} else if (
-  prevCharacterMetrics && 
-  prevCharacterMetrics.overall_performance >= performanceGoals.overall_performance_goal &&
-  prevCharacterMetrics.total_calls >= performanceGoals.number_of_calls_average
-) {
-  shouldBeUnlocked = true;
-}
+  if (index === 0) {
+    // Megan is always unlocked
+    shouldBeUnlocked = true;
+  } else if (
+    prevCharacterMetrics && 
+    prevCharacterMetrics.overall_performance >= 85 &&
+    prevCharacterMetrics.total_calls >= 10
+  ) {
+    // Character should be unlocked if previous character has performance >= 85
+    shouldBeUnlocked = true;
+  }
 
   // Update character's locked status
   const updatedCharacter = {
@@ -662,39 +638,36 @@ if (index === 0) {
       </motion.div>
     ) : (
       <motion.div
-  key="scores"
-  initial={{ y: "-100%", opacity: 0 }}
-  animate={{ y: 0, opacity: 1 }}
-  exit={{ y: "100%", opacity: 0 }}
-  transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-  className="absolute inset-0 overflow-hidden"
->
-  {isLoading ? (
-    <div className="flex items-center justify-center h-full">
-      <p>Loading metrics...</p>
-    </div>
-  ) : (
-    <ScorePanel 
-      characterName={character.name}
-      memberId={memberId || ''}
-      teamId={teamId}
-      performanceGoals={performanceGoals}
-    />
-  )}
-</motion.div>
+        key="scores"
+        initial={{ y: "-100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+        className="absolute inset-0 overflow-hidden"
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <p>Loading metrics...</p>
+          </div>
+        ) : (
+          <ScorePanel 
+            characterName={character.name}
+            memberId={memberId || ''}
+          />
+        )}
+      </motion.div>
     )}
   </AnimatePresence>
 </div>
                 </div>
               </div>
               {updatedCharacter.locked && (
-  <LockedOverlay 
-    previousAssistant={prevCharacter?.name || ''}
-    isLastLocked={index === characters.length - 1}
-    difficulty={character.difficulty}
-    performanceGoals={performanceGoals}
-  />
-)}
+                <LockedOverlay 
+                  previousAssistant={prevCharacter?.name || ''}
+                  isLastLocked={index === characters.length - 1}
+                  difficulty={character.difficulty}
+                />
+              )}
             </div>
           );
         })}
