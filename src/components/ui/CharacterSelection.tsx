@@ -126,7 +126,18 @@ const characters: Character[] = [
   },
 ]
 
-function ScorePanel({ characterName, memberId }: { characterName: string; memberId: string }) {
+function ScorePanel({ 
+  characterName, 
+  memberId,
+  performanceGoals 
+}: { 
+  characterName: string; 
+  memberId: string;
+  performanceGoals: {
+    overall_performance_goal: number;
+    number_of_calls_average: number;
+  }; 
+}) {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -186,8 +197,8 @@ function ScorePanel({ characterName, memberId }: { characterName: string; member
       <div className="w-full text-sm h-[320px] flex flex-col">
         <div className="flex-grow overflow-y-auto scrollbar-thin">
           <h3 className="text-sm font-semibold mb-2 sticky top-0 bg-white py-2 z-10">
-          Score based on past {performanceGoals.number_of_calls_average} calls
-          </h3>
+            Score based on past {performanceGoals.number_of_calls_average} calls
+            </h3>
           {categories.map(({ key, label }) => (
             <div key={key} className="bg-[#f8fdf6] p-3 rounded-lg mb-3 mr-2">
               <div className="flex justify-between items-center mb-1">
@@ -670,9 +681,10 @@ if (index === 0) {
           </div>
         ) : (
           <ScorePanel 
-            characterName={character.name}
-            memberId={memberId || ''}
-          />
+  characterName={character.name}
+  memberId={memberId || ''}
+  performanceGoals={performanceGoals}
+/>
         )}
       </motion.div>
     )}
