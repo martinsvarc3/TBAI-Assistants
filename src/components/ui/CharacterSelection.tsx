@@ -399,6 +399,46 @@ export default function CharacterSelection() {
       [name]: prev[name] === 'description' ? 'scores' : 'description'
     }));
   };
+  const [characterMetrics, setCharacterMetrics] = useState<{
+  [key: string]: {
+    overall_performance: number;
+    engagement: number;
+    objection_handling: number;
+    information_gathering: number;
+    program_explanation: number;
+    closing_skills: number;
+    overall_effectiveness: number;
+  };
+}>({});
+
+// Fetch metrics for all characters when component mounts
+useEffect(() => {
+  const fetchAllMetrics = async () => {
+    if (!memberId) return;
+    
+    const metrics: typeof characterMetrics = {};
+    
+    for (const character of characters) {
+      try {
+        const response = await fetch(
+          `/api/character-performance?memberId=${memberId}&teamId=team_default&characterName=${character.name}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          metrics[character.name] = data;
+        }
+      } catch (error) {
+        console.error(`Error fetching metrics for ${character.name}:`, error);
+      }
+    }
+    
+    setCharacterMetrics(metrics);
+  };
+
+  if (memberId) {
+    fetchAllMetrics();
+  }
+}, [memberId]);
 // Add after useState hooks and before return statement
 useLayoutEffect(() => {
   const updateHeight = () => {
@@ -569,3 +609,4 @@ return (
       <TeamSettings />
     </div>
 );
+}
