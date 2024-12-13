@@ -258,19 +258,19 @@ function LockedOverlay({ previousAssistant, isLastLocked, difficulty }: { previo
           <p className="text-white text-xl mb-8">
             {isLastLocked 
               ? `Unlock ${previousAssistant} First` 
-              : `Achieve Overall Performance above 85 from the past 10 calls on ${previousAssistant} to Unlock.`
+              : `Achieve Overall Performance above ${performanceGoals.overall_performance_goal} from the past ${performanceGoals.number_of_calls_average} calls on ${previousAssistant} to Unlock.`
             }
           </p>
           {!isLastLocked && (
             <div className="w-full">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-white">Overall Performance</span>
-                <span className="text-sm font-bold text-white">85/100</span>
+                <span className="text-sm font-bold text-white">{performanceGoals.overall_performance_goal}/100</span>
               </div>
               <div className="h-3 bg-white/20 rounded-full overflow-hidden relative">
                 <div 
                   className="h-full bg-gradient-to-r from-white to-gray-200 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: '85%' }}
+                  style={{ width: `${performanceGoals.overall_performance_goal}%` }}
                 />
               </div>
             </div>
@@ -292,6 +292,11 @@ const [activePanel, setActivePanel] = useState<{ [key: string]: 'description' | 
 const [memberId, setMemberId] = useState<string | null>(null);
 const [isLoading, setIsLoading] = useState(true);
 
+const [performanceGoals, setPerformanceGoals] = useState({
+  overall_performance_goal: 85, // Default value
+  number_of_calls_average: 10   // Default value
+});
+
 const [characterMetrics, setCharacterMetrics] = useState<{
   [key: string]: {
     overall_performance: number;
@@ -306,21 +311,38 @@ const [characterMetrics, setCharacterMetrics] = useState<{
   } | null;
 }>({});
 
-  useEffect(() => {
-    // Request member ID from parent window
-    window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
+useEffect(() => {
+  // Request member ID from parent window
+  window.parent.postMessage({ type: 'GET_MEMBER_ID' }, '*');
 
-    // Listen for member ID from parent
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
-        console.log('Received member ID:', event.data.memberId);
-        setMemberId(event.data.memberId);
+  // Listen for member ID from parent
+  const handleMessage = async (event: MessageEvent) => {
+    if (event.data.type === 'SET_MEMBER_ID' && event.data.memberId) {
+      console.log('Received member ID:', event.data.memberId);
+      setMemberId(event.data.memberId);
+      
+      // Get teamId from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const teamId = urlParams.get('teamId');
+      
+      if (teamId) {
+        try {
+          const response = await fetch(`/api/performance-goals?teamId=${teamId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setPerformanceGoals(data);
+          }
+        } catch (error) {
+          console.error('Error fetching performance goals:', error);
+        }
       }
-    };
+    }
+  };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  window.addEventListener('message', handleMessage);
+  return () => window.removeEventListener('message', handleMessage);
+}, []);
+  
  useEffect(() => {
   const fetchAllMetrics = async () => {
     if (!memberId) return;
@@ -539,8 +561,8 @@ return (
     shouldBeUnlocked = true;
   } else if (
     prevCharacterMetrics && 
-    prevCharacterMetrics.overall_performance >= 85 &&
-    prevCharacterMetrics.total_calls >= 10
+    prevCharacterMetrics.overall_performance >= performanceGoals.overall_performance_goal &&
+    prevCharacterMetrics.total_calls >= performanceGoals.number_of_calls_average
   ) {
     // Character should be unlocked if previous character has performance >= 85
     shouldBeUnlocked = true;
