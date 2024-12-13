@@ -1,5 +1,6 @@
 'use client'
 
+import TeamSettings from './TeamSettings'
 import { useState, useEffect } from 'react'
 import { Settings, Save } from 'lucide-react'
 
@@ -74,16 +75,12 @@ export default function TeamSettings() {
   }
 
 return (
-  <div className="fixed bottom-4 right-4 bg-white p-6 rounded-lg shadow-xl w-80">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-lg font-semibold">Team Settings</h3>
-      <button
-        onClick={() => setIsOpen(false)}
-      >
-        {/* You might want to add a close icon or text here */}
-      </button>
+    <div className="w-full bg-white rounded-[20px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+        {characters.map((character, index) => (
+          // ... your existing character cards code
+        ))}
+      </div>
+      <TeamSettings />  {/* Add this line here */}
     </div>
-    {/* Rest of the component content */}
-  </div>
- );
-} 
+);
